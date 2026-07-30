@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+   <soap:Body>
+      <EjecutaTrxResponse xmlns="AtkWs_DocExtractor">
+         <EjecutaTrxResult>
+            <Message xmlns="">
+               <MessageId>
+                  <MsgCode>NOMFACTERP</MsgCode>
+                  <MsgDesc>Servicio de Administracion de Facturas</MsgDesc>
+                  <MsgVersion>v2.0</MsgVersion>
+                  <MsgFromAddress>ZSGRALES</MsgFromAddress>
+                  <MsgToAddress>ARTIKOS</MsgToAddress>
+                  <MsgDateTime>2026-06-19</MsgDateTime>
+                  <MsgCodSis>SAF</MsgCodSis>
+                  <MsgStatus>0</MsgStatus>
+               </MessageId>
+               <Nomina>
+                  <Cabecera>
+                     <Msg_From>ARTIKOS</Msg_From>
+                     <Msg_To>002</Msg_To>
+                     <Msg_Date>2026-06-19 12:35:03</Msg_Date>
+                     <Msg_System>SAF</Msg_System>
+                     <Msg_Code>NOMFACTERP</Msg_Code>
+                     <Msg_Version>2.0</Msg_Version>
+                     <Numero_Nomina>15961</Numero_Nomina>
+                     <Tipo_Nomina>ZSG_AYP</Tipo_Nomina>
+                     <Fecha_Nomina>2026-06-03 15:43:49</Fecha_Nomina>
+                     <Cantidad_Documentos>1</Cantidad_Documentos>
+                  </Cabecera>
+                  <Documentos>
+                     <Documento>
+                        <Secuencia>1</Secuencia>
+                        <Rut_Proveedor>96670840-9</Rut_Proveedor>
+                        <Proveedor>DIMERC S.A.</Proveedor>
+                        <Nacional>si</Nacional>
+                        <Id_Documento>3151101</Id_Documento>
+                        <Usuario>eolivares</Usuario>
+                        <Numero_Documento>3</Numero_Documento>
+                        <Tipo_Documento>33</Tipo_Documento>
+                        <Tipo_ERP>FEC</Tipo_ERP>
+                        <Fecha_Emision>2026-06-03</Fecha_Emision>
+                        <Fecha_Vencimiento>2026-07-03</Fecha_Vencimiento>
+                        <Fecha_Recepcion>2026-06-03</Fecha_Recepcion>
+                        <Fecha_RecepSII>2026-06-03</Fecha_RecepSII>
+                        <URL_Documento>https://atk-qa-ptk.artikos.cl/documento/3151101</URL_Documento>
+                        <Observacion/>
+                        <DocCurrency>CLP</DocCurrency>
+                        <USO_IVA>U</USO_IVA>
+                        <Monto_Neto>19000</Monto_Neto>
+                        <Monto_IVA>2850</Monto_IVA>
+                        <Monto_Exento>0</Monto_Exento>
+                        <Otros_Impuestos>0</Otros_Impuestos>
+                        <Monto_Total>21850</Monto_Total>
+                        <Conciliaciones>
+                           <Conciliacion>
+                              <Tipo_Monto>Afecto</Tipo_Monto>
+                              <Codigo_Conciliacion>RCP</Codigo_Conciliacion>
+                              <Moneda_Cambio>CLP</Moneda_Cambio>
+                              <Monto_Cambio>1</Monto_Cambio>
+                              <Cod_Recep>RE_20260602170340</Cod_Recep>
+                              <Quantity>10</Quantity>
+                              <Comment>Recepcion conforme</Comment>
+                              <ItemLine>1</ItemLine>
+                              <Distribuciones>
+                                 <Distribucion>
+                                    <Secuencia>1</Secuencia>
+                                    <ItemDescription>Servicio beneficios personal</ItemDescription>
+                                    <Cod_CentroCosto>20001</Cod_CentroCosto>
+                                    <CentroCosto>GCIA ADM.Y FZAS.</CentroCosto>
+                                    <Cod_CuentaContable>6131311000</Cod_CuentaContable>
+                                    <CuentaContable>BENEFICIOS AL PERSONAL</CuentaContable>
+                                    <Monto_Neto>15000</Monto_Neto>
+                                    <Monto_Exento>0</Monto_Exento>
+                                    <Monto_IVA>2090</Monto_IVA>
+                                    <Monto_Total>17090</Monto_Total>
+                                 </Distribucion>
+                              </Distribuciones>
+                           </Conciliacion>
+                           <Conciliacion>
+                              <Tipo_Monto>Afecto</Tipo_Monto>
+                              <Codigo_Conciliacion>RCP</Codigo_Conciliacion>
+                              <Moneda_Cambio>CLP</Moneda_Cambio>
+                              <Monto_Cambio>1</Monto_Cambio>
+                              <Cod_Recep>RE_20260602170340</Cod_Recep>
+                              <Quantity>4</Quantity>
+                              <Comment>Recepcion conforme</Comment>
+                              <ItemLine>2</ItemLine>
+                              <Distribuciones>
+                                 <Distribucion>
+                                    <Secuencia>1</Secuencia>
+                                    <ItemDescription>Servicio operativo</ItemDescription>
+                                    <Cod_CentroCosto>20001</Cod_CentroCosto>
+                                    <CentroCosto>GCIA ADM.Y FZAS.</CentroCosto>
+                                    <Cod_CuentaContable>6131202000</Cod_CuentaContable>
+                                    <CuentaContable>SERVICIOS OPERATIVOS</CuentaContable>
+                                    <Monto_Neto>4000</Monto_Neto>
+                                    <Monto_Exento>0</Monto_Exento>
+                                    <Monto_IVA>760</Monto_IVA>
+                                    <Monto_Total>4760</Monto_Total>
+                                 </Distribucion>
+                              </Distribuciones>
+                           </Conciliacion>
+                        </Conciliaciones>
+                     </Documento>
+                  </Documentos>
+               </Nomina>
+            </Message>
+         </EjecutaTrxResult>
+      </EjecutaTrxResponse>
+   </soap:Body>
+</soap:Envelope>

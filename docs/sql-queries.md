@@ -1,0 +1,327 @@
+# Consultas SQL operativas
+
+Estas consultas son de apoyo para soporte y operacion. Ajustar nombres de schema si el usuario Oracle no apunta directamente al schema de la aplicacion.
+
+## CONTROL_NOMINA
+
+### Resumen por job y status
+
+```sql
+SELECT STATUS, COUNT(*) AS TOTAL
+FROM CONTROL_NOMINA
+WHERE JOB_EXECUTION_ID = :jobExecutionId
+GROUP BY STATUS
+ORDER BY STATUS;
+```
+
+### Detalle por job
+
+```sql
+SELECT JOB_EXECUTION_ID,
+       NUMERO_NOMINA,
+       STATUS,
+       TOTAL_DOCUMENTS,
+       TOTAL_OK,
+       TOTAL_NOK,
+       TOTAL_CONCILIACIONES,
+       TOTAL_DISTRIBUCIONES,
+       CREATED_AT,
+       UPDATED_AT,
+       ERROR_MESSAGE
+FROM CONTROL_NOMINA
+WHERE JOB_EXECUTION_ID = :jobExecutionId
+ORDER BY NUMERO_NOMINA;
+```
+
+### Buscar nomina especifica
+
+```sql
+SELECT *
+FROM CONTROL_NOMINA
+WHERE NUMERO_NOMINA = :numeroNomina
+ORDER BY CREATED_AT DESC;
+```
+
+### Nominas OK que serian omitidas en reproceso
+
+```sql
+SELECT NUMERO_NOMINA,
+       JOB_EXECUTION_ID,
+       TOTAL_DOCUMENTS,
+       TOTAL_OK,
+       TOTAL_NOK,
+       CREATED_AT,
+       UPDATED_AT
+FROM CONTROL_NOMINA
+WHERE STATUS = 'OK'
+ORDER BY NVL(UPDATED_AT, CREATED_AT) DESC;
+```
+
+### Nominas ERROR candidatas a reproceso
+
+```sql
+SELECT NUMERO_NOMINA,
+       JOB_EXECUTION_ID,
+       ERROR_MESSAGE,
+       CREATED_AT,
+       UPDATED_AT
+FROM CONTROL_NOMINA
+WHERE STATUS = 'ERROR'
+ORDER BY NVL(UPDATED_AT, CREATED_AT) DESC;
+```
+
+### Ultimas ejecuciones por numeroNomina
+
+```sql
+SELECT NUMERO_NOMINA,
+       JOB_EXECUTION_ID,
+       STATUS,
+       TOTAL_DOCUMENTS,
+       TOTAL_OK,
+       TOTAL_NOK,
+       CREATED_AT,
+       UPDATED_AT,
+       ERROR_MESSAGE
+FROM CONTROL_NOMINA
+WHERE NUMERO_NOMINA = :numeroNomina
+ORDER BY NVL(UPDATED_AT, CREATED_AT) DESC;
+```
+
+### Buscar nomina en un job especifico
+
+```sql
+SELECT *
+FROM CONTROL_NOMINA
+WHERE JOB_EXECUTION_ID = :jobExecutionId
+  AND NUMERO_NOMINA = :numeroNomina;
+```
+
+### Ultimas ejecuciones con error
+
+```sql
+SELECT JOB_EXECUTION_ID,
+       NUMERO_NOMINA,
+       STATUS,
+       ERROR_MESSAGE,
+       CREATED_AT,
+       UPDATED_AT
+FROM CONTROL_NOMINA
+WHERE STATUS = 'ERROR'
+ORDER BY NVL(UPDATED_AT, CREATED_AT) DESC;
+```
+
+### Totales por dia
+
+```sql
+SELECT TRUNC(CREATED_AT) AS FECHA,
+       STATUS,
+       COUNT(*) AS TOTAL_NOMINAS,
+       SUM(NVL(TOTAL_DOCUMENTS, 0)) AS TOTAL_DOCUMENTOS,
+       SUM(NVL(TOTAL_OK, 0)) AS TOTAL_OK,
+       SUM(NVL(TOTAL_NOK, 0)) AS TOTAL_NOK
+FROM CONTROL_NOMINA
+GROUP BY TRUNC(CREATED_AT), STATUS
+ORDER BY FECHA DESC, STATUS;
+```
+
+### Errores mas frecuentes
+
+```sql
+SELECT ERROR_MESSAGE,
+       COUNT(*) AS TOTAL
+FROM CONTROL_NOMINA
+WHERE STATUS = 'ERROR'
+  AND ERROR_MESSAGE IS NOT NULL
+GROUP BY ERROR_MESSAGE
+ORDER BY TOTAL DESC;
+```
+
+### Nominas en PROCESSING antiguas
+
+```sql
+SELECT JOB_EXECUTION_ID,
+       NUMERO_NOMINA,
+       STATUS,
+       CREATED_AT,
+       UPDATED_AT
+FROM CONTROL_NOMINA
+WHERE STATUS = 'PROCESSING'
+  AND CREATED_AT < SYSTIMESTAMP - INTERVAL '1' HOUR
+ORDER BY CREATED_AT;
+```
+
+## Spring Batch metadata
+
+### Ultimas ejecuciones
+
+```sql
+SELECT JOB_EXECUTION_ID,
+       STATUS,
+       START_TIME,
+       END_TIME,
+       EXIT_CODE,
+       EXIT_MESSAGE
+FROM BATCH_JOB_EXECUTION
+ORDER BY JOB_EXECUTION_ID DESC;
+```
+
+### Estado de jobs con nombre
+
+```sql
+SELECT BJI.JOB_NAME,
+       BJE.JOB_EXECUTION_ID,
+       BJE.STATUS,
+       BJE.START_TIME,
+       BJE.END_TIME,
+       BJE.EXIT_CODE,
+       BJE.EXIT_MESSAGE
+FROM BATCH_JOB_EXECUTION BJE
+JOIN BATCH_JOB_INSTANCE BJI
+  ON BJI.JOB_INSTANCE_ID = BJE.JOB_INSTANCE_ID
+ORDER BY BJE.JOB_EXECUTION_ID DESC;
+```
+
+### Parametros de un job
+
+```sql
+SELECT *
+FROM BATCH_JOB_EXECUTION_PARAMS
+WHERE JOB_EXECUTION_ID = :jobExecutionId
+ORDER BY PARAMETER_NAME;
+```
+
+### Steps por jobExecutionId
+
+```sql
+SELECT STEP_EXECUTION_ID,
+       STEP_NAME,
+       STATUS,
+       READ_COUNT,
+       WRITE_COUNT,
+       COMMIT_COUNT,
+       ROLLBACK_COUNT,
+       START_TIME,
+       END_TIME,
+       EXIT_CODE,
+       EXIT_MESSAGE
+FROM BATCH_STEP_EXECUTION
+WHERE JOB_EXECUTION_ID = :jobExecutionId
+ORDER BY STEP_EXECUTION_ID;
+```
+
+### Exit message de job fallido
+
+```sql
+SELECT JOB_EXECUTION_ID,
+       STATUS,
+       EXIT_CODE,
+       EXIT_MESSAGE,
+       START_TIME,
+       END_TIME
+FROM BATCH_JOB_EXECUTION
+WHERE STATUS = 'FAILED'
+ORDER BY JOB_EXECUTION_ID DESC;
+```
+
+### Jobs activos
+
+```sql
+SELECT BJI.JOB_NAME,
+       BJE.JOB_EXECUTION_ID,
+       BJE.STATUS,
+       BJE.START_TIME,
+       BJE.LAST_UPDATED
+FROM BATCH_JOB_EXECUTION BJE
+JOIN BATCH_JOB_INSTANCE BJI
+  ON BJI.JOB_INSTANCE_ID = BJE.JOB_INSTANCE_ID
+WHERE BJE.STATUS IN ('STARTING', 'STARTED', 'STOPPING')
+ORDER BY BJE.START_TIME DESC;
+```
+
+### Jobs activos por perfil
+
+```sql
+SELECT BJE.JOB_EXECUTION_ID,
+       BJI.JOB_NAME,
+       BJE.STATUS,
+       BJE.START_TIME,
+       P.PARAMETER_VALUE AS PROFILE
+FROM BATCH_JOB_EXECUTION BJE
+JOIN BATCH_JOB_INSTANCE BJI
+  ON BJI.JOB_INSTANCE_ID = BJE.JOB_INSTANCE_ID
+LEFT JOIN BATCH_JOB_EXECUTION_PARAMS P
+  ON P.JOB_EXECUTION_ID = BJE.JOB_EXECUTION_ID
+ AND P.PARAMETER_NAME = 'profile'
+WHERE BJE.STATUS IN ('STARTING', 'STARTED', 'STOPPING')
+ORDER BY BJE.START_TIME DESC;
+```
+
+### Duracion de ejecuciones recientes
+
+```sql
+SELECT BJE.JOB_EXECUTION_ID,
+       BJI.JOB_NAME,
+       BJE.STATUS,
+       BJE.START_TIME,
+       BJE.END_TIME,
+       ROUND((CAST(BJE.END_TIME AS DATE) - CAST(BJE.START_TIME AS DATE)) * 24 * 60, 2) AS DURATION_MINUTES
+FROM BATCH_JOB_EXECUTION BJE
+JOIN BATCH_JOB_INSTANCE BJI
+  ON BJI.JOB_INSTANCE_ID = BJE.JOB_INSTANCE_ID
+WHERE BJE.START_TIME IS NOT NULL
+ORDER BY BJE.JOB_EXECUTION_ID DESC;
+```
+
+### Candidatos antiguos para purga manual de revision
+
+No ejecutar deletes manuales salvo procedimiento aprobado. Esta consulta solo ayuda a estimar volumen.
+
+```sql
+SELECT STATUS,
+       COUNT(*) AS TOTAL
+FROM BATCH_JOB_EXECUTION
+WHERE END_TIME IS NOT NULL
+  AND NVL(END_TIME, CREATE_TIME) < SYSTIMESTAMP - INTERVAL '30' DAY
+  AND STATUS IN ('COMPLETED', 'ABANDONED')
+GROUP BY STATUS;
+```
+
+## Validacion ejecucion remota Artikos
+
+### Ultimos registros CONTROL_NOMINA
+
+```sql
+SELECT *
+FROM CONTROL_NOMINA
+ORDER BY CREATED_AT DESC;
+```
+
+### Control por numero de nomina
+
+```sql
+SELECT JOB_EXECUTION_ID,
+       NUMERO_NOMINA,
+       TOTAL_DOCUMENTS,
+       TOTAL_OK,
+       TOTAL_NOK,
+       STATUS,
+       ERROR_MESSAGE,
+       CREATED_AT,
+       UPDATED_AT
+FROM CONTROL_NOMINA
+WHERE NUMERO_NOMINA = :numeroNomina
+ORDER BY CREATED_AT DESC;
+```
+
+### Ultimas ejecuciones Spring Batch
+
+```sql
+SELECT JOB_EXECUTION_ID,
+       STATUS,
+       START_TIME,
+       END_TIME,
+       EXIT_CODE,
+       EXIT_MESSAGE
+FROM BATCH_JOB_EXECUTION
+ORDER BY JOB_EXECUTION_ID DESC;
+```

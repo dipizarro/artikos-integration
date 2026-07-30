@@ -1,0 +1,19 @@
+apiVersion: apps/v1  # Versión de la API que se está utilizando para el Deployment
+kind: Deployment  # Tipo de objeto que se está creando, en este caso un Deployment
+metadata:
+  name: artikos-integration # Nombre del Deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: artikos-integration # Nombre del contenedor
+        envFrom:
+          - secretRef:
+              name: spn-zscl-wsaccess  # Referencia a un secreto que contiene variables de entorno
+        env:
+        - name: URL_APP_CONFIGURATION  # Nombre de la variable de entorno
+          value: https://zscldev-appconfig.azconfig.io  # Valor de la variable de entorno: URL de configuración de la aplicación
+        - name: APPCFG_LABEL  # Nombre de la variable de entorno
+          value: development  # Valor de la variable de entorno: etiqueta de configuración de la aplicación
+        - name: APPCFG_KEY_FILTER  # Filtro de claves para Azure App Configuration
+          value: /artikosIntegration/  # Carga las claves con prefijo /artikosIntegration/

@@ -1,0 +1,56 @@
+{
+  "COD_TIP_DOCUMT": "CMP",
+  "CMP": {
+    "CMP_DOCUMT": {
+      "COD_TIP_DOCUMT": "FEC",
+      "COD_EMPRES": "001",
+      "NUM_PERIODO": 2026,
+      "NUM_RUT": 11111111,
+      "NUM_DOCCMP": "DOC-SAN-001",
+      "COD_SISTEM": "CM",
+      "COD_CUENTA": "6131311000",
+      "COD_TIP_CUENTA": "2",
+      "COD_CONTBL": "1",
+      "COD_MONEDA": "$",
+      "FEC_EMIDCM": "2026-06-03",
+      "GLS_DOCUMT": "FEC PROVEEDOR DEMO S.A.",
+      "FEC_COMPRB": "2026-06-03",
+      "MTO_TOT_NTODIG": 10000,
+      "MTO_TOT_EXNDIG": 0,
+      "MTO_TOT_IVADIG": 1900,
+      "MTO_TOT_DOCDIG": 11900,
+      "NUM_FOL_DOCUMT": 1001,
+      "FEC_VNCCTA": "2026-07-03",
+      "CODIGO_REC_IVA": "U",
+      "FECHA_REC_FE": "2026-06-03"
+    },
+    "CMP_DOCUMT_DET": [
+      {
+        "NUM_LIN_DOCCMP": 1,
+        "COD_TIP_UNID": "UNI",
+        "GRL_COD_ITEM": "ITEMSAN001",
+        "COD_CCOSTO": "20001",
+        "COD_CUENTA": "6131311000",
+        "COD_TIP_CUENTA": "2",
+        "GLS_LINEA": "FEC PROVEEDOR DEMO S.A.",
+        "NUM_CANTDD": 1,
+        "MTO_UNID": 10000,
+        "MTO_NETO": 10000,
+        "VAL_TIP_CAMBIO": 1,
+        "PCT_DSCNTO": 0,
+        "MTO_DSCNTO": 0,
+        "MTO_EXENTO": 0,
+        "MTO_AFECTO": 10000,
+        "PCT_IVA": 19,
+        "MTO_IVACLC": 1900,
+        "MTO_TOT_ITEM": 11900
+      }
+    ],
+    "CMP_DOCUMT_DET_RUT": {
+      "CMP_NUM_RUT": 11111111,
+      "NUM_RUT": 11111111,
+      "A_IND_VIGE": "V"
+    }
+  },
+  "HNR": null
+}

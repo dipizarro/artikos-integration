@@ -1,0 +1,6 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artikos-integration
+spec:
+  replicas: 1 # Cantidad de replicas del deployment, en este ejemplo, se crea un solo pod.

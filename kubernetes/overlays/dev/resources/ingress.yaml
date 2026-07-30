@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: artikos-integration-ingress
+  labels:
+    app: artikos-integration
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: devsantanderseguros.cl.bsch
+    http:
+      paths:
+      - backend:
+          service:
+            name: artikos-integration
+            port:
+              number: 80
+        path: /
+        pathType: Prefix

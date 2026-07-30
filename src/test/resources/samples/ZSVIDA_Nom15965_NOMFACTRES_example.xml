@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Message>
+  <MessageId>
+    <MsgCode>NOMFACTRES</MsgCode>
+    <MsgDesc>Actualizacion de carga de documentos</MsgDesc>
+    <MsgVersion>V2.0</MsgVersion>
+    <MsgFromAddress>ZSVIDA</MsgFromAddress>
+    <MsgToAddress>ARTIKOS</MsgToAddress>
+    <MsgDateTime>24/06/2026 10:32:38</MsgDateTime>
+    <MsgNumber></MsgNumber>
+    <MsgCodSis>SAF</MsgCodSis>
+    <DocFileName></DocFileName>
+  </MessageId>
+  <Respuesta>
+    <Cabecera>
+      <NumeroNomina>15965</NumeroNomina>
+      <CantidadOK>3</CantidadOK>
+      <CantidadNOK>0</CantidadNOK>
+      <CantidadInformados>3</CantidadInformados>
+    </Cabecera>
+    <Documentos>
+      <Doc>
+        <DocFolio>651</DocFolio>
+        <DocRutProveedor>76137413-3</DocRutProveedor>
+        <DocTipoDoc>FEC</DocTipoDoc>
+        <Monto>226100</Monto>
+        <DocEstado>OK</DocEstado>
+        <DocDescEstado>Documento procesado correctamente en Procurement</DocDescEstado>
+      </Doc>
+      <Doc>
+        <DocFolio>460</DocFolio>
+        <DocRutProveedor>99540210-6</DocRutProveedor>
+        <DocTipoDoc>FEC</DocTipoDoc>
+        <Monto>11321393</Monto>
+        <DocEstado>OK</DocEstado>
+        <DocDescEstado>Documento procesado correctamente en Procurement</DocDescEstado>
+      </Doc>
+      <Doc>
+        <DocFolio>6500</DocFolio>
+        <DocRutProveedor>76137413-3</DocRutProveedor>
+        <DocTipoDoc>FCE</DocTipoDoc>
+        <Monto>1391545</Monto>
+        <DocEstado>OK</DocEstado>
+        <DocDescEstado>Documento procesado correctamente en Procurement</DocDescEstado>
+      </Doc>
+    </Documentos>
+  </Respuesta>
+</Message>

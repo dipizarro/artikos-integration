@@ -1,0 +1,21 @@
+stages:
+  - test
+  - build
+  - deploy
+  - cleanup
+
+include:
+  - component: $CI_SERVER_FQDN/shared/zsdevops/cicd/components/docker/lint@v1.0.1
+  - component: $CI_SERVER_FQDN/shared/zsdevops/cicd/components/docker/build@v1.0.1
+  - component: $CI_SERVER_FQDN/shared/zsdevops/cicd/components/docker/deploy@v1.0.1
+    inputs:
+      k8s_namespace: 'artikos'
+      flux_resource_path: 'kustomize.toolkit.fluxcd.io/v1/namespaces/artikos/kustomizations/artikos-integration'
+      iac_git_repo: 'zs/zs-kubernetes/artikos/iac-artikos-integration.git'
+  - component: $CI_SERVER_FQDN/shared/zsdevops/cicd/components/docker/deploy_review@v1.0.1
+  - component: $CI_SERVER_FQDN/shared/zsdevops/cicd/components/sonarqube/sonar@v1.0.0
+    inputs:
+      sonar_scan_script: .sonar-maven
+      sonar_job_container_image: maven:3.9.9-amazoncorretto-21-alpine
+  - component: $CI_SERVER_FQDN/shared/zsdevops/cicd/components/azure-app-configuration/deploy-appcfg@v1.0.0
+  - component: $CI_SERVER_FQDN/shared/zsdevops/cicd/components/azure-key-vault/create-secrets@v1.0.0

@@ -1,0 +1,129 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+   <soap:Body>
+      <EjecutaTrxResponse xmlns="AtkWs_DocExtractor">
+         <EjecutaTrxResult>
+            <Message xmlns="">
+               <MessageId>
+                  <MsgCode>NOMFACTERP</MsgCode>
+                  <MsgDesc>Servicio de Administración de Facturas</MsgDesc>
+                  <MsgVersion>v2.0</MsgVersion>
+                  <MsgFromAddress>ZSVIDA</MsgFromAddress>
+                  <MsgToAddress>ARTIKOS</MsgToAddress>
+                  <MsgDateTime>03-06-2026</MsgDateTime>
+                  <MsgCodSis>SAF</MsgCodSis>
+                  <MsgCallBack/>
+                  <MsgStatus>0</MsgStatus>
+               </MessageId>
+               <MessageOut>
+                  <LogMessage>
+                     <Type>0</Type>
+                     <DocNumber/>
+                     <DocType/>
+                     <MessageText/>
+                     <Severity>0</Severity>
+                  </LogMessage>
+               </MessageOut>
+               <Nomina>
+                  <Cabecera>
+                     <Msg_From>ARTIKOS</Msg_From>
+                     <Msg_To>ZSVIDA</Msg_To>
+                     <Msg_Date>2026-06-03 16:08:02</Msg_Date>
+                     <Msg_System>SAF</Msg_System>
+                     <Msg_Code>NOMFACTERP</Msg_Code>
+                     <Msg_Version>2.0</Msg_Version>
+                     <Numero_Nomina>15960</Numero_Nomina>
+                     <Tipo_Nomina>ZSVAYP</Tipo_Nomina>
+                     <Fecha_Nomina>2026-06-03 15:43:49</Fecha_Nomina>
+                     <Cantidad_Documentos>1</Cantidad_Documentos>
+                  </Cabecera>
+                  <Documentos>
+                     <Documento>
+                        <Secuencia>1</Secuencia>
+                        <Rut_Proveedor>96670840-9</Rut_Proveedor>
+                        <Proveedor>DIMERC S.A.</Proveedor>
+                        <Nacional>si</Nacional>
+                        <Id_Documento>3151100</Id_Documento>
+                        <Usuario>eolivares</Usuario>
+                        <Numero_Documento>2</Numero_Documento>
+                        <Tipo_Documento>33</Tipo_Documento>
+                        <Tipo_ERP>33</Tipo_ERP>
+                        <Fecha_Emision>2026-06-03</Fecha_Emision>
+                        <Fecha_Vencimiento>2026-07-03</Fecha_Vencimiento>
+                        <Fecha_Recepcion>2026-06-03</Fecha_Recepcion>
+                        <Fecha_RecepSII>2026-06-03</Fecha_RecepSII>
+                        <URL_Documento>https://atk-qa-ptk.artikos.cl/XS_Include/Asp/XS_Viewer.asp?token=156295708-293-788</URL_Documento>
+                        <Observacion/>
+                        <DocCurrency>CLP</DocCurrency>
+                        <Monto_Neto>19000</Monto_Neto>
+                        <Monto_IVA>2850</Monto_IVA>
+                        <Monto_Exento>0</Monto_Exento>
+                        <Otros_Impuestos>0</Otros_Impuestos>
+                        <Monto_Total>21850</Monto_Total>
+                        <Referencias>
+                           <Referencia>
+                              <Secuencia>1</Secuencia>
+                              <Tipo_Documento>801</Tipo_Documento>
+                              <Folio>32</Folio>
+                              <Comentario>Ref</Comentario>
+                           </Referencia>
+                        </Referencias>
+                        <Conciliaciones>
+                           <Conciliacion>
+                              <Tipo_Monto>Afecto</Tipo_Monto>
+                              <Tipo_Producto/>
+                              <Codigo_Conciliacion>RCP</Codigo_Conciliacion>
+                              <Moneda_Cambio>CLP</Moneda_Cambio>
+                              <Monto_Cambio>1</Monto_Cambio>
+                              <Cod_Recep>RE_20260602170340</Cod_Recep>
+                              <Quantity>10</Quantity>
+                              <Comment>Recepcion conforme</Comment>
+                              <ItemLine>2</ItemLine>
+                              <Distribuciones>
+                                 <Distribucion>
+                                    <Secuencia>1</Secuencia>
+                                    <ItemDescription>(32) 10 CAJA de te caja 100 bolsitas</ItemDescription>
+                                    <Cod_CentroCosto>20001</Cod_CentroCosto>
+                                    <CentroCosto>GCIA ADM.Y FZAS.(DISTRIB FIJO)</CentroCosto>
+                                    <Cod_CuentaContable>6130401000</Cod_CuentaContable>
+                                    <CuentaContable>MATERIALES DE OFICINA</CuentaContable>
+                                    <Monto_Neto>15000</Monto_Neto>
+                                    <Monto_Exento>0</Monto_Exento>
+                                    <Monto_IVA>2090</Monto_IVA>
+                                    <Monto_Total>17090</Monto_Total>
+                                 </Distribucion>
+                              </Distribuciones>
+                           </Conciliacion>
+                           <Conciliacion>
+                              <Tipo_Monto>Afecto</Tipo_Monto>
+                              <Tipo_Producto/>
+                              <Codigo_Conciliacion>RCP</Codigo_Conciliacion>
+                              <Moneda_Cambio>CLP</Moneda_Cambio>
+                              <Monto_Cambio>1</Monto_Cambio>
+                              <Cod_Recep>RE_20260602170340</Cod_Recep>
+                              <Quantity>4</Quantity>
+                              <Comment>Recepcion conforme</Comment>
+                              <ItemLine>1</ItemLine>
+                              <Distribuciones>
+                                 <Distribucion>
+                                    <Secuencia>1</Secuencia>
+                                    <ItemDescription>(32) 4 Paquete de confort</ItemDescription>
+                                    <Cod_CentroCosto>20001</Cod_CentroCosto>
+                                    <CentroCosto>GCIA ADM.Y FZAS.(DISTRIB FIJO)</CentroCosto>
+                                    <Cod_CuentaContable>6130401000</Cod_CuentaContable>
+                                    <CuentaContable>MATERIALES DE OFICINA</CuentaContable>
+                                    <Monto_Neto>4000</Monto_Neto>
+                                    <Monto_Exento>0</Monto_Exento>
+                                    <Monto_IVA>760</Monto_IVA>
+                                    <Monto_Total>4760</Monto_Total>
+                                 </Distribucion>
+                              </Distribuciones>
+                           </Conciliacion>
+                        </Conciliaciones>
+                     </Documento>
+                  </Documentos>
+               </Nomina>
+            </Message>
+         </EjecutaTrxResult>
+      </EjecutaTrxResponse>
+   </soap:Body>
+</soap:Envelope>

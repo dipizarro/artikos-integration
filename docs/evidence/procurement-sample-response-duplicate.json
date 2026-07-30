@@ -1,0 +1,6 @@
+{
+  "payload": null,
+  "statusCode": -20,
+  "message": null,
+  "error": "El registro que intenta crear ya existe en la base de datos"
+}

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+   <soap:Body>
+      <EjecutaTrxResponse xmlns="AtkWs_DocExtractor">
+         <EjecutaTrxResult>
+            <Message xmlns="">
+               <MessageId>
+                  <MsgCode>NOMFACTERP</MsgCode>
+                  <MsgDesc>Servicio de Administracion de Facturas</MsgDesc>
+                  <MsgVersion>v2.0</MsgVersion>
+                  <MsgFromAddress>ZSGRALES</MsgFromAddress>
+                  <MsgToAddress>ARTIKOS</MsgToAddress>
+                  <MsgDateTime>20-07-2026</MsgDateTime>
+                  <MsgCodSis>SAF</MsgCodSis>
+                  <MsgStatus>0</MsgStatus>
+               </MessageId>
+               <Nomina>
+                  <Cabecera>
+                     <Msg_From>ARTIKOS</Msg_From>
+                     <Msg_To>002</Msg_To>
+                     <Msg_Date>2026-07-20 15:00:17</Msg_Date>
+                     <Msg_System>SAF</Msg_System>
+                     <Msg_Code>NOMFACTERP</Msg_Code>
+                     <Msg_Version>2.0</Msg_Version>
+                     <Numero_Nomina>16022</Numero_Nomina>
+                     <Tipo_Nomina>ZSG_AYP</Tipo_Nomina>
+                     <Fecha_Nomina>2026-07-20 11:40:17</Fecha_Nomina>
+                     <Cantidad_Documentos>1</Cantidad_Documentos>
+                  </Cabecera>
+                  <Documentos>
+                     <Documento>
+                        <Secuencia>1</Secuencia>
+                        <Rut_Proveedor>83628100-4</Rut_Proveedor>
+                        <Proveedor>Sonda S.A</Proveedor>
+                        <Nacional>si</Nacional>
+                        <Id_Documento>3169642</Id_Documento>
+                        <Usuario>eolivares</Usuario>
+                        <Numero_Documento>2678011</Numero_Documento>
+                        <Tipo_Documento>33</Tipo_Documento>
+                        <Tipo_ERP>FEC</Tipo_ERP>
+                        <Fecha_Emision>2026-07-08</Fecha_Emision>
+                        <Fecha_Vencimiento>2026-08-08</Fecha_Vencimiento>
+                        <Fecha_Recepcion>2026-07-09</Fecha_Recepcion>
+                        <Fecha_RecepSII>2026-07-09</Fecha_RecepSII>
+                        <URL_Documento>https://artikos.example/documento/3169642</URL_Documento>
+                        <Observacion/>
+                        <DocCurrency>CLP</DocCurrency>
+                        <USO_IVA>U</USO_IVA>
+                        <Monto_Neto>10687680</Monto_Neto>
+                        <Monto_IVA>2030659</Monto_IVA>
+                        <Monto_Exento>0</Monto_Exento>
+                        <Otros_Impuestos>0</Otros_Impuestos>
+                        <Monto_Total>12718339</Monto_Total>
+                        <Conciliaciones>
+                           <Conciliacion>
+                              <Tipo_Monto>Afecto</Tipo_Monto>
+                              <Tipo_Producto/>
+                              <Codigo_Conciliacion>ADJ</Codigo_Conciliacion>
+                              <Moneda_Cambio/>
+                              <Monto_Cambio>0</Monto_Cambio>
+                              <Cod_Recep/>
+                              <Quantity>0</Quantity>
+                              <Comment/>
+                              <ItemLine>0</ItemLine>
+                              <Distribuciones>
+                                 <Distribucion>
+                                    <Secuencia>1</Secuencia>
+                                    <ItemDescription>Prueba de Ajuste Manual</ItemDescription>
+                                    <Cod_CentroCosto>20001</Cod_CentroCosto>
+                                    <CentroCosto>GCIA ADM.Y FZAS.</CentroCosto>
+                                    <Cod_CuentaContable>6131003000</Cod_CuentaContable>
+                                    <CuentaContable>ELECTRICIDAD</CuentaContable>
+                                    <Cod_Cta_Pago_Proveedor>2154424000</Cod_Cta_Pago_Proveedor>
+                                    <Monto_Neto>10687680</Monto_Neto>
+                                    <Monto_Exento>0</Monto_Exento>
+                                    <Monto_IVA>2030659</Monto_IVA>
+                                    <Monto_Total>12718339</Monto_Total>
+                                 </Distribucion>
+                              </Distribuciones>
+                           </Conciliacion>
+                        </Conciliaciones>
+                     </Documento>
+                  </Documentos>
+               </Nomina>
+            </Message>
+         </EjecutaTrxResult>
+      </EjecutaTrxResponse>
+   </soap:Body>
+</soap:Envelope>

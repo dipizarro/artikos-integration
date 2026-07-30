@@ -1,0 +1,39 @@
+<Message>
+  <MessageId>
+    <MsgCode>NOMFACTRES</MsgCode>
+    <MsgDesc>Actualizacion de carga de documentos</MsgDesc>
+    <MsgVersion>V2.0</MsgVersion>
+    <MsgFromAddress>ZSVIDA</MsgFromAddress>
+    <MsgToAddress>ARTIKOS</MsgToAddress>
+    <MsgDateTime>23/06/2026 15:00:00</MsgDateTime>
+    <MsgNumber></MsgNumber>
+    <MsgCodSis>SAF</MsgCodSis>
+    <DocFileName></DocFileName>
+  </MessageId>
+  <Respuesta>
+    <Cabecera>
+      <NumeroNomina>900001</NumeroNomina>
+      <CantidadOK>1</CantidadOK>
+      <CantidadNOK>1</CantidadNOK>
+      <CantidadInformados>2</CantidadInformados>
+    </Cabecera>
+    <Documentos>
+      <Doc>
+        <DocFolio>DOC-SAN-001</DocFolio>
+        <DocRutProveedor>11111111-1</DocRutProveedor>
+        <DocTipoDoc>FEC</DocTipoDoc>
+        <Monto>11900</Monto>
+        <DocEstado>OK</DocEstado>
+        <DocDescEstado>Documento procesado correctamente</DocDescEstado>
+      </Doc>
+      <Doc>
+        <DocFolio>DOC-SAN-002</DocFolio>
+        <DocRutProveedor>22222222-2</DocRutProveedor>
+        <DocTipoDoc>FEC</DocTipoDoc>
+        <Monto>5000</Monto>
+        <DocEstado>NOK</DocEstado>
+        <DocDescEstado>Documento rechazado funcionalmente por Procurement</DocDescEstado>
+      </Doc>
+    </Documentos>
+  </Respuesta>
+</Message>

@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artikos-integration
+spec:
+  template:
+    spec:
+      containers:
+      - name: artikos-integration
+        resources: # Recursos asignados al contenedor
+          limits:
+            cpu: 300m
+            memory: 1024Mi
+          requests:
+            cpu: 64m
+            memory: 64Mi  

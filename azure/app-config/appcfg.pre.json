@@ -1,0 +1,299 @@
+{
+	"items": [
+		
+		{
+		  "key": "/artikosIntegration/APP_DATASOURCE_URL",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-app-datasource-url\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/APP_DATASOURCE_USERNAME",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-app-datasource-username\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/APP_DATASOURCE_PASSWORD",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-app-datasource-password\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/BATCH_DATASOURCE_URL",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-batch-datasource-url\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/BATCH_DATASOURCE_USERNAME",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-batch-datasource-username\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/BATCH_DATASOURCE_PASSWORD",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-batch-datasource-password\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/BATCH_DATASOURCE_DRIVER_CLASS_NAME",
+		  "value": "oracle.jdbc.OracleDriver",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/APP_DB_SCHEMA",
+		  "value": "ASI",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/SPRING_BATCH_JDBC_TABLE_PREFIX",
+		  "value": "BACHPROCESS.BATCH_",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/PROCUREMENT_BASE_URL",
+		  "value": "https://konghzs.santanderseguros.cl.bsch/procurement",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/PROCUREMENT_DOCUMENT_PATH",
+		  "value": "/document",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/PROCUREMENT_CLIENT_ENABLED",
+		  "value": "true",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/PROCUREMENT_INTEGRATION_ENABLED",
+		  "value": "true",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_NOMINA_URL",
+		  "value": "https://integracion-qa.artikos.cl/Ws_B2BOut/AtkWS_DocExtractorB2B.asmx",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_CONNECTOR_URL",
+		  "value": "https://integracion-qa.artikos.cl/Ws_B2B/AtkWS_DocConnectorB2B.asmx",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_SOURCE_MODE",
+		  "value": "remote",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_CONFIRM_ENABLED",
+		  "value": "true",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_RESULT_ENABLED",
+		  "value": "true",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/PROCUREMENT_CONNECT_TIMEOUT_MS",
+		  "value": "5000",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/PROCUREMENT_READ_TIMEOUT_MS",
+		  "value": "30000",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_CONSUMO_TOKEN",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-artikos-generales-consumo-token\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_RESPUESTA_TOKEN",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-artikos-generales-respuesta-token\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_RESULTADO_TOKEN",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-artikos-generales-resultado-token\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_CONSUMO_TOKEN",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-artikos-vida-consumo-token\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_RESPUESTA_TOKEN",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-artikos-vida-respuesta-token\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_RESULTADO_TOKEN",
+		  "value": "{\"uri\":\"https://kv-apps-cl-hml-003.vault.azure.net/secrets/atk-nomina-batch-artikos-vida-resultado-token\"}",
+		  "label": "preproduction",
+		  "content_type": "application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_CONSUMO_MSG_CODE",
+		  "value": "NOMFACTERP",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_RESULTADO_MSG_CODE",
+		  "value": "NOMFACTRES",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_RESPUESTA_MSG_CODE",
+		  "value": "NOMFACTCONFIR",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_MSG_TO_ADDRESS",
+		  "value": "ARTIKOS",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_MSG_COD_SIS",
+		  "value": "SAF",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_MSG_FROM_ADDRESS",
+		  "value": "ZSGRALES",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_MSG_COD_FROM_ADDRESS",
+		  "value": "76590840-K",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_GENERALES_MSG_COD_EXTERNO",
+		  "value": "A",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_CONSUMO_MSG_CODE",
+		  "value": "NOMFACTERP",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_RESPUESTA_MSG_CODE",
+		  "value": "NOMFACTCONFIR",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_RESULTADO_MSG_CODE",
+		  "value": "NOMFACTRES",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_MSG_FROM_ADDRESS",
+		  "value": "ZSVIDA",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_MSG_COD_FROM_ADDRESS",
+		  "value": "96819630-8",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_MSG_TO_ADDRESS",
+		  "value": "ARTIKOS",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_MSG_COD_SIS",
+		  "value": "SAF",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		},
+		{
+		  "key": "/artikosIntegration/ARTIKOS_VIDA_MSG_COD_EXTERNO",
+		  "value": "A",
+		  "label": "preproduction",
+		  "content_type": "",
+		  "tags": {}
+		}
+	]
+}

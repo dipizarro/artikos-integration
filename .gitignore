@@ -1,0 +1,48 @@
+### Build artifacts ###
+target/
+**/target/
+*.jar
+*.war
+*.ear
+*.class
+
+### Logs ###
+logs/
+**/logs/
+*.log
+*.gz
+
+### Environment / secrets ###
+.env
+*.env
+*secrets*
+!docs/secrets.md
+application-local.properties
+**/application-local.properties
+src/main/resources/application-local.properties
+
+### Local samples / captures / debug ###
+local-samples/
+captures/
+debug/
+procurement-debug/
+src/main/resources/samples/
+src/main/resources/captures/
+src/main/resources/debug/
+scripts/
+
+### Archives / local references ###
+*.zip
+reference-oracle-app/
+
+### IDE ###
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+### OS ###
+.DS_Store
+Thumbs.db

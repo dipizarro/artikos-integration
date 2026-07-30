@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:nom="http://atk.cl/nomina">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <nom:NominaRequest>
+            <nom:Periodo>2026-06</nom:Periodo>
+            <nom:Registros/>
+        </nom:NominaRequest>
+    </soapenv:Body>
+</soapenv:Envelope>

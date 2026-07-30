@@ -1,0 +1,50 @@
+apiVersion: apps/v1  # Versión de la API que se está utilizando para el Deployment
+kind: Deployment  # Tipo de objeto que se está creando, en este caso un Deployment
+metadata:
+  labels:
+    app: artikos-integration # Etiqueta para identificar la aplicación
+    tier: artikos  # Etiqueta para identificar el proyecto o capa
+  name: artikos-integration # Nombre del Deployment
+spec:
+  selector:
+    matchLabels:
+      app: artikos-integration # Selector que coincide con las etiquetas de los Pods
+      tier: artikos  # Selector que coincide con las etiquetas de los Pods
+  template:
+    metadata:
+      labels:
+        app: artikos-integration # Etiqueta para identificar la aplicación en los Pods
+        tier: artikos  # Etiqueta para identificar el proyecto o capa en los Pods
+      annotations:
+        container.apparmor.security.v1beta1.kubernetes.io/artikos-integration: runtime/default  # Anotación para configurar AppArmor
+    spec:
+      containers:
+      - name: artikos-integration # Nombre del contenedor
+        image: artikos-integration # Imagen del contenedor
+        imagePullPolicy: IfNotPresent  # Política de obtención de la imagen: solo si no está presente
+        ports:
+        - containerPort: 8080  # Puerto expuesto por el contenedor
+          protocol: TCP  # Protocolo utilizado en el puerto
+          name: http # Nombre del puerto, se puede indicar en el service
+        resources: # Recursos asignados al contenedor
+          limits:
+            cpu: 300m
+            memory: 1024Mi
+          requests:
+            cpu: 64m
+            memory: 64Mi  
+      dnsPolicy: ClusterFirst  # Política DNS: primero intenta resolver con el DNS del clúster
+
+      # ClusterFirstWithHostNet: se utiliza con hostNetwork = true.
+      # Similar a ClusterFirst, pero está específicamente diseñado para Pods que usan la red del host. 
+      # Intenta resolver las consultas DNS primero con el servidor DNS del clúster y, si no puede, utiliza los servidores DNS del host
+      #dnsPolicy: ClusterFirstWithHostNet
+      
+      # Default: Los Pods heredan la configuración DNS del nodo trabajador en el que se ejecutan.
+      # Utiliza directamente los servidores DNS configurados en el nodo trabajador, sin pasar por el servidor DNS del clúster. 
+      # Esto puede resultar en que los nombres de los servicios dentro del clúster no se resuelvan correctamente
+      #dnsPolicy: Default
+      
+      imagePullSecrets:
+      - name: azure-cregistry  # Secreto para obtener la imagen desde Azure Container Registry
+      restartPolicy: Always  # Política de reinicio del Pod: siempre reiniciar en caso de fallo

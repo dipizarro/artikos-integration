@@ -1,0 +1,14 @@
+apiVersion: apps/v1  # Versión de la API que se está utilizando para el Deployment
+kind: Deployment  # Tipo de objeto que se está creando, en este caso un Deployment
+metadata:
+  name: artikos-integration # Nombre del Deployment
+spec:
+  template:
+    spec:
+      affinity:  # Configuración de afinidad para la programación de Pods
+        podAntiAffinity:  # Anti-afinidad de Pod: define en qué nodos no debe ejecutarse el Pod junto a otros Pods
+          requiredDuringSchedulingIgnoredDuringExecution:  # Reglas que deben cumplirse durante la programación, pero se ignoran durante la ejecución
+          - labelSelector:  # Selector de etiquetas para identificar los Pods con los que no debe coexistir
+              matchLabels:
+                app: artikos-integration # Etiqueta que debe coincidir en los Pods existentes
+            topologyKey: kubernetes.io/hostname  # Clave de topología: evita que los Pods se programen en el mismo nodo
