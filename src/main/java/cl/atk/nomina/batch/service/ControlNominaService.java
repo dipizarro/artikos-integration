@@ -29,11 +29,15 @@ public class ControlNominaService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ControlNominaEntity markProcessing(Long jobExecutionId, Long numeroNomina) {
-        return markProcessing(jobExecutionId, numeroNomina, null);
+        return doMarkProcessing(jobExecutionId, numeroNomina, null);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ControlNominaEntity markProcessing(Long jobExecutionId, Long numeroNomina, String codEmpres) {
+        return doMarkProcessing(jobExecutionId, numeroNomina, codEmpres);
+    }
+
+    private ControlNominaEntity doMarkProcessing(Long jobExecutionId, Long numeroNomina, String codEmpres) {
         Map<String, String> previousContext = LoggingContext.snapshot();
         LoggingContext.putJobExecutionId(jobExecutionId);
         LoggingContext.putNumeroNomina(numeroNomina);
@@ -104,11 +108,19 @@ public class ControlNominaService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ControlNominaEntity markError(Long jobExecutionId, Long numeroNomina, String errorMessage) {
-        return markError(jobExecutionId, numeroNomina, errorMessage, null);
+        return doMarkError(jobExecutionId, numeroNomina, errorMessage, null);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ControlNominaEntity markError(
+            Long jobExecutionId,
+            Long numeroNomina,
+            String errorMessage,
+            String codEmpres) {
+        return doMarkError(jobExecutionId, numeroNomina, errorMessage, codEmpres);
+    }
+
+    private ControlNominaEntity doMarkError(
             Long jobExecutionId,
             Long numeroNomina,
             String errorMessage,

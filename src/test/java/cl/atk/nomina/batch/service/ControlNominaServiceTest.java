@@ -43,6 +43,29 @@ class ControlNominaServiceTest {
     }
 
     @Test
+    void markProcessingWithoutCodEmpresCreatesProcessingEntity() {
+        when(repository.findByIdJobExecutionIdAndIdNumeroNomina(1L, 15960L)).thenReturn(Optional.empty());
+        when(repository.save(any(ControlNominaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ControlNominaEntity result = service.markProcessing(1L, 15960L);
+
+        assertThat(result.getCodEmpres()).isNull();
+        assertThat(result.getStatus()).isEqualTo(ControlNominaStatus.PROCESSING);
+        verify(repository).save(result);
+    }
+
+    @Test
+    void markProcessingReturnsExistingEntityWithoutSaving() {
+        ControlNominaEntity existing = baseEntity();
+        when(repository.findByIdJobExecutionIdAndIdNumeroNomina(1L, 15960L)).thenReturn(Optional.of(existing));
+
+        ControlNominaEntity result = service.markProcessing(1L, 15960L, "001");
+
+        assertThat(result).isSameAs(existing);
+        verify(repository, org.mockito.Mockito.never()).save(any(ControlNominaEntity.class));
+    }
+
+    @Test
     void markCompletedSetsOkWhenTotalNokIsZero() {
         when(repository.findByIdJobExecutionIdAndIdNumeroNomina(1L, 15960L)).thenReturn(Optional.of(baseEntity()));
         when(repository.save(any(ControlNominaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -81,6 +104,36 @@ class ControlNominaServiceTest {
         assertThat(result.getCodEmpres()).isEqualTo("001");
         assertThat(result.getErrorMessage()).isEqualTo("boom");
         assertThat(result.getUpdatedAt()).isNotNull();
+    }
+
+    @Test
+    void markErrorWithoutCodEmpresUpdatesExistingEntity() {
+        ControlNominaEntity existing = baseEntity();
+        existing.setCodEmpres("001");
+        when(repository.findByIdJobExecutionIdAndIdNumeroNomina(1L, 15960L)).thenReturn(Optional.of(existing));
+        when(repository.save(any(ControlNominaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ControlNominaEntity result = service.markError(1L, 15960L, "boom");
+
+        assertThat(result).isSameAs(existing);
+        assertThat(result.getStatus()).isEqualTo(ControlNominaStatus.ERROR);
+        assertThat(result.getCodEmpres()).isEqualTo("001");
+        assertThat(result.getErrorMessage()).isEqualTo("boom");
+        verify(repository).save(existing);
+    }
+
+    @Test
+    void markErrorWithCodEmpresCreatesErrorEntity() {
+        when(repository.findByIdJobExecutionIdAndIdNumeroNomina(1L, 15960L)).thenReturn(Optional.empty());
+        when(repository.save(any(ControlNominaEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ControlNominaEntity result = service.markError(1L, 15960L, "boom", "001");
+
+        assertThat(result.getStatus()).isEqualTo(ControlNominaStatus.ERROR);
+        assertThat(result.getCodEmpres()).isEqualTo("001");
+        assertThat(result.getCreatedAt()).isNotNull();
+        assertThat(result.getUpdatedAt()).isNotNull();
+        verify(repository).save(result);
     }
 
     @Test
