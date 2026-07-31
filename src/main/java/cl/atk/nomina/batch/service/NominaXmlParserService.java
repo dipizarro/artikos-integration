@@ -34,6 +34,8 @@ import org.w3c.dom.NodeList;
 @Service
 public class NominaXmlParserService {
 
+    private static final String SECUENCIA_ELEMENT = "Secuencia";
+
     private final Resource sampleFile;
 
     public NominaXmlParserService(@Value("${atk.batch.sample-file}") Resource sampleFile) {
@@ -155,7 +157,7 @@ public class NominaXmlParserService {
         List<DocumentoContable> documentos = new ArrayList<>();
         for (Element documento : children(documentosElement, "Documento")) {
             documentos.add(new DocumentoContable(
-                    intValue(documento, "Secuencia"),
+                    intValue(documento, SECUENCIA_ELEMENT),
                     text(documento, "Rut_Proveedor"),
                     text(documento, "Proveedor"),
                     text(documento, "Nacional"),
@@ -191,7 +193,7 @@ public class NominaXmlParserService {
         List<ReferenciaDocumento> referencias = new ArrayList<>();
         for (Element referencia : children(referenciasElement, "Referencia")) {
             referencias.add(new ReferenciaDocumento(
-                    intValue(referencia, "Secuencia"),
+                    intValue(referencia, SECUENCIA_ELEMENT),
                     text(referencia, "Tipo_Documento"),
                     text(referencia, "Folio"),
                     text(referencia, "Comentario")));
@@ -229,7 +231,7 @@ public class NominaXmlParserService {
         List<DistribucionContable> distribuciones = new ArrayList<>();
         for (Element distribucion : children(distribucionesElement, "Distribucion")) {
             distribuciones.add(new DistribucionContable(
-                    intValue(distribucion, "Secuencia"),
+                    intValue(distribucion, SECUENCIA_ELEMENT),
                     text(distribucion, "ItemDescription"),
                     text(distribucion, "Cod_CentroCosto"),
                     text(distribucion, "CentroCosto"),

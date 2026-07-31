@@ -20,6 +20,7 @@ import java.io.StringReader;
 public class ArtikosSoapResponseParser {
 
     private static final String NO_NOMINAS_MESSAGE = "No hay nominas para procesar";
+    private static final String FIRST_LOCAL_NAME_MATCH_SUFFIX = "'][1])";
 
     private final NominaXmlParserService nominaXmlParserService;
 
@@ -33,7 +34,7 @@ public class ArtikosSoapResponseParser {
 
     public String extractNoNominasMessage(String rawXml) {
         String messageText = textByLocalNameIgnoringStatus(rawXml, "MessageText");
-        return messageText.isBlank() ? "No hay nominas para procesar" : messageText;
+        return messageText.isBlank() ? NO_NOMINAS_MESSAGE : messageText;
     }
 
     public Optional<Nomina> extractNomina(String rawXml) {
@@ -47,15 +48,15 @@ public class ArtikosSoapResponseParser {
     }
 
     private boolean hasNode(String rawXml, String localName) {
-        return !textByXPath(rawXml, "name(//*[local-name()='" + localName + "'][1])").isBlank();
+        return !textByXPath(rawXml, "name(//*[local-name()='" + localName + FIRST_LOCAL_NAME_MATCH_SUFFIX).isBlank();
     }
 
     private String textByLocalName(String rawXml, String localName) {
-        return textByXPath(rawXml, "string(//*[local-name()='" + localName + "'][1])");
+        return textByXPath(rawXml, "string(//*[local-name()='" + localName + FIRST_LOCAL_NAME_MATCH_SUFFIX);
     }
 
     private String textByLocalNameIgnoringStatus(String rawXml, String localName) {
-        return textByXPath(rawXml, "string(//*[local-name()='" + localName + "'][1])", false);
+        return textByXPath(rawXml, "string(//*[local-name()='" + localName + FIRST_LOCAL_NAME_MATCH_SUFFIX, false);
     }
 
     private String textByXPath(String rawXml, String expression) {

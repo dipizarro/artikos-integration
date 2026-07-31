@@ -29,6 +29,8 @@ public class BatchMetadataPurgeService {
     private static final String JOB_EXECUTION_PARAMS = "BATCH_JOB_EXECUTION_PARAMS";
     private static final String JOB_EXECUTION = "BATCH_JOB_EXECUTION";
     private static final String JOB_INSTANCE = "BATCH_JOB_INSTANCE";
+    private static final String JOB_EXECUTION_ID_COLUMN = "JOB_EXECUTION_ID";
+    private static final String JOB_INSTANCE_ID_COLUMN = "JOB_INSTANCE_ID";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -105,7 +107,7 @@ public class BatchMetadataPurgeService {
                     WHERE e.JOB_EXECUTION_ID IN (%s)
                     """.formatted(placeholders(chunk.size()));
             jdbcTemplate.query(sql, rs -> {
-                candidateInstanceIds.add(rs.getLong("JOB_INSTANCE_ID"));
+                candidateInstanceIds.add(rs.getLong(JOB_INSTANCE_ID_COLUMN));
             }, chunk.toArray());
         }
 
@@ -117,8 +119,8 @@ public class BatchMetadataPurgeService {
                     WHERE JOB_INSTANCE_ID IN (%s)
                     """.formatted(placeholders(chunk.size()));
             jdbcTemplate.query(sql, rs -> {
-                Long jobInstanceId = rs.getLong("JOB_INSTANCE_ID");
-                Long jobExecutionId = rs.getLong("JOB_EXECUTION_ID");
+                Long jobInstanceId = rs.getLong(JOB_INSTANCE_ID_COLUMN);
+                Long jobExecutionId = rs.getLong(JOB_EXECUTION_ID_COLUMN);
                 executionsByInstance.computeIfAbsent(jobInstanceId, ignored -> new ArrayList<>()).add(jobExecutionId);
             }, chunk.toArray());
         }
@@ -192,15 +194,15 @@ public class BatchMetadataPurgeService {
     }
 
     private int countByJobExecutionId(String tableName, List<Long> jobExecutionIds) {
-        return countById(tableName, "JOB_EXECUTION_ID", jobExecutionIds);
+        return countById(tableName, JOB_EXECUTION_ID_COLUMN, jobExecutionIds);
     }
 
     private int deleteByJobExecutionId(String tableName, List<Long> jobExecutionIds) {
-        return deleteById(tableName, "JOB_EXECUTION_ID", jobExecutionIds);
+        return deleteById(tableName, JOB_EXECUTION_ID_COLUMN, jobExecutionIds);
     }
 
     private int deleteByJobInstanceId(List<Long> jobInstanceIds) {
-        return deleteById(JOB_INSTANCE, "JOB_INSTANCE_ID", jobInstanceIds);
+        return deleteById(JOB_INSTANCE, JOB_INSTANCE_ID_COLUMN, jobInstanceIds);
     }
 
     private int countById(String tableName, String idColumn, List<Long> ids) {

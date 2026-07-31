@@ -34,6 +34,9 @@ public class ArtikosSoapClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(ArtikosSoapClient.class);
     private static final String DEFAULT_EXTRACTOR_SOAP_ACTION = "\"AtkWs_DocExtractor/EjecutaTrx\"";
     private static final String DEFAULT_CONNECTOR_SOAP_ACTION = "\"AtkWs_DocConnectorB2B/EjecutaTrx\"";
+    private static final String TECHNICAL_ERROR_LOG_PREFIX =
+            "Artikos SOAP technical error operation={} profile={} endpoint={} elapsedMs={} ";
+    private static final String EXCEPTION_LOG_FIELDS = "exceptionClass={} exceptionMessage={}";
 
     private final ArtikosProperties artikosProperties;
     private final ArtikosNominaSoapRequestBuilder requestBuilder;
@@ -111,8 +114,7 @@ public class ArtikosSoapClient {
         } catch (ArtikosSoapClientException exception) {
             throw exception;
         } catch (RestClientException exception) {
-            LOGGER.warn("Artikos SOAP technical error operation={} profile={} endpoint={} elapsedMs={} "
-                            + "exceptionClass={} exceptionMessage={}",
+            LOGGER.warn(TECHNICAL_ERROR_LOG_PREFIX + EXCEPTION_LOG_FIELDS,
                     ArtikosOperation.NOMFACTERP,
                     profileType,
                     endpoint,
@@ -165,8 +167,7 @@ public class ArtikosSoapClient {
         } catch (ArtikosSoapClientException exception) {
             throw exception;
         } catch (RestClientException exception) {
-            LOGGER.warn("Artikos SOAP technical error operation={} profile={} endpoint={} elapsedMs={} "
-                            + "exceptionClass={} exceptionMessage={}",
+            LOGGER.warn(TECHNICAL_ERROR_LOG_PREFIX + EXCEPTION_LOG_FIELDS,
                     ArtikosOperation.NOMFACTCONFIR,
                     profileType,
                     endpoint,
@@ -223,8 +224,7 @@ public class ArtikosSoapClient {
         } catch (ArtikosSoapClientException exception) {
             throw exception;
         } catch (RestClientException exception) {
-            LOGGER.warn("Artikos SOAP technical error operation={} profile={} endpoint={} elapsedMs={} "
-                            + "exceptionClass={} exceptionMessage={}",
+            LOGGER.warn(TECHNICAL_ERROR_LOG_PREFIX + EXCEPTION_LOG_FIELDS,
                     ArtikosOperation.NOMFACTRES,
                     profileType,
                     endpoint,
