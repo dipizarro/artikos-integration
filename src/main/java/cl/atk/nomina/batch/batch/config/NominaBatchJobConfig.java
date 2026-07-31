@@ -58,6 +58,7 @@ public class NominaBatchJobConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NominaBatchJobConfig.class);
     private static final String LOG_START_NANO = "logStartNano";
+    private static final String PROFILE_PARAMETER = "profile";
 
     @Bean
     public Job nominaDocumentosContablesJob(
@@ -204,7 +205,7 @@ public class NominaBatchJobConfig {
             @Override
             public void beforeJob(JobExecution jobExecution) {
                 Long jobExecutionId = jobExecution.getId();
-                String profile = jobExecution.getJobParameters().getString("profile");
+                String profile = jobExecution.getJobParameters().getString(PROFILE_PARAMETER);
                 Long maxNominas = jobExecution.getJobParameters().getLong("maxNominas");
                 String dryRun = jobExecution.getJobParameters().getString("dryRun");
                 jobExecution.getExecutionContext().putLong(LOG_START_NANO, System.nanoTime());
@@ -221,7 +222,7 @@ public class NominaBatchJobConfig {
             @Override
             public void afterJob(JobExecution jobExecution) {
                 Long jobExecutionId = jobExecution.getId();
-                String profile = jobExecution.getJobParameters().getString("profile");
+                String profile = jobExecution.getJobParameters().getString(PROFILE_PARAMETER);
                 Long maxNominas = jobExecution.getJobParameters().getLong("maxNominas");
                 String dryRun = jobExecution.getJobParameters().getString("dryRun");
                 long startedAt = jobExecution.getExecutionContext().containsKey(LOG_START_NANO)
@@ -251,7 +252,8 @@ public class NominaBatchJobConfig {
             public void beforeStep(StepExecution stepExecution) {
                 stepExecution.getExecutionContext().putLong(LOG_START_NANO, System.nanoTime());
                 LoggingContext.putJobExecutionId(stepExecution.getJobExecutionId());
-                LoggingContext.putProfile(stepExecution.getJobExecution().getJobParameters().getString("profile"));
+                LoggingContext.putProfile(
+                        stepExecution.getJobExecution().getJobParameters().getString(PROFILE_PARAMETER));
                 LOGGER.info("Step started jobExecutionId={} stepName={}",
                         stepExecution.getJobExecutionId(), stepExecution.getStepName());
                 LoggingContext.clearAll();
@@ -263,7 +265,8 @@ public class NominaBatchJobConfig {
                         ? stepExecution.getExecutionContext().getLong(LOG_START_NANO)
                         : System.nanoTime();
                 LoggingContext.putJobExecutionId(stepExecution.getJobExecutionId());
-                LoggingContext.putProfile(stepExecution.getJobExecution().getJobParameters().getString("profile"));
+                LoggingContext.putProfile(
+                        stepExecution.getJobExecution().getJobParameters().getString(PROFILE_PARAMETER));
                 LOGGER.info("Step finished jobExecutionId={} stepName={} status={} readCount={} writeCount={} "
                                 + "processSkipCount={} readSkipCount={} writeSkipCount={} commitCount={} "
                                 + "rollbackCount={} elapsedMs={}",
