@@ -93,7 +93,7 @@ Aunque Artikos trae `Tipo_Documento` y `Tipo_ERP`, para esta integracion la raiz
 | `Documento.Rut_Proveedor` | `CMP_DOCUMT_DET_RUT.NUM_RUT` | Se envia el mismo RUT proveedor sin digito verificador. |
 | `Documento.Numero_Documento` | `CMP_DOCUMT.NUM_DOCCMP` | Valor directo. |
 | `Documento.Fecha_Emision` | `CMP_DOCUMT.FEC_EMIDCM` | Formato de salida `yyyy-MM-dd`. |
-| `Documento.Fecha_Emision` | `CMP_DOCUMT.FEC_COMPRB` | Regla temporal hasta confirmar fuente ASI. |
+| `Nomina.Fecha_Nomina` | `CMP_DOCUMT.FEC_COMPRB` | Formato de salida `yyyy-MM-dd`. |
 | `Documento.Fecha_Vencimiento` | `CMP_DOCUMT.FEC_VNCCTA` | Si no viene, usar `Fecha_Emision`. |
 | `Documento.Fecha_Recepcion` | `CMP_DOCUMT.FECHA_REC_FE` | Formato de salida `yyyy-MM-dd`. |
 | `Documento.Monto_Neto` | `CMP_DOCUMT.MTO_TOT_NTODIG` | Valor directo, `0` si viene nulo. |

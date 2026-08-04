@@ -73,6 +73,8 @@ class ProcurementDocumentRequestJsonTest {
         assertThat(json.get("CMP").get("CMP_DOCUMT").get("COD_EMPRES").asText()).isEqualTo("002");
         assertThat(json.get("CMP").get("CMP_DOCUMT").get("COD_TIP_DOCUMT").asText()).isEqualTo("FEC");
         assertThat(json.get("CMP").get("CMP_DOCUMT").get("NUM_DOCCMP").asText()).isEqualTo("2");
+        assertThat(json.get("CMP").get("CMP_DOCUMT").get("FEC_EMIDCM").asText()).isEqualTo("2026-06-03");
+        assertThat(json.get("CMP").get("CMP_DOCUMT").get("FEC_COMPRB").asText()).isEqualTo("2026-06-03");
         assertThat(json.get("CMP").get("CMP_DOCUMT").get("COD_TIP_CUENTA").asText()).isEqualTo("2");
         assertThat(json.get("CMP").get("CMP_DOCUMT").get("MTO_TOT_DOCDIG").decimalValue())
                 .isEqualByComparingTo("21850");
