@@ -91,6 +91,7 @@ public class ProcurementDocumentMapper {
             String codEmpres,
             List<MappedDetail> details) {
         String fechaEmision = dateMapper.toProcurementDate(documento.fechaEmision());
+        String fechaComprobante = dateMapper.toProcurementDate(nomina.cabecera().fechaNomina());
         String fechaRecepcion = dateMapper.toProcurementDate(documento.fechaRecepcion());
         String fechaVencimiento = dateMapper.toProcurementDate(
                 isBlank(documento.fechaVencimiento()) ? documento.fechaEmision() : documento.fechaVencimiento());
@@ -110,7 +111,7 @@ public class ProcurementDocumentMapper {
                 firstLookup.codMoneda(),
                 fechaEmision,
                 documentGloss(documento, GLS_DOCUMT_MAX_LENGTH),
-                fechaEmision,
+                fechaComprobante,
                 zeroIfNull(documento.montoNeto()),
                 zeroIfNull(documento.montoExento()),
                 zeroIfNull(documento.montoIva()),

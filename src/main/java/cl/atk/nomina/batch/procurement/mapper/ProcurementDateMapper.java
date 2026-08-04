@@ -16,6 +16,7 @@ public class ProcurementDateMapper {
             DateTimeFormatter.ISO_LOCAL_DATE,
             DateTimeFormatter.ofPattern("dd/MM/yyyy"),
             DateTimeFormatter.ofPattern("yyyyMMdd"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
             new DateTimeFormatterBuilder()
                     .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
                     .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)

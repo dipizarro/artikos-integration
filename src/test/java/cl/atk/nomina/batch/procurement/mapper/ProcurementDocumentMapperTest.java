@@ -14,6 +14,7 @@ import cl.atk.nomina.batch.domain.Conciliacion;
 import cl.atk.nomina.batch.domain.DistribucionContable;
 import cl.atk.nomina.batch.domain.DocumentoContable;
 import cl.atk.nomina.batch.domain.Nomina;
+import cl.atk.nomina.batch.domain.NominaHeader;
 import cl.atk.nomina.batch.domain.artikos.ArtikosProfileType;
 import cl.atk.nomina.batch.procurement.config.ProcurementMappingProperties;
 import cl.atk.nomina.batch.procurement.dto.ProcurementDocumentRequest;
@@ -121,6 +122,19 @@ class ProcurementDocumentMapperTest {
                 .toCmpDocumentRequest(ArtikosProfileType.VIDA, nomina, documento);
 
         assertThat(request.cmp().cmpDocumt().codMoneda()).isEqualTo("$");
+    }
+
+    @Test
+    void mapsIssueDateAndNominaDateToTheirRespectiveProcurementFields() {
+        Nomina source = withCodCtaPagoProveedor(parser.parseSampleFile(), "2154424000");
+        Nomina nomina = withFechaNomina(source, "2026-07-15 10:25:24");
+        DocumentoContable documento = withFechaEmision(nomina.documentos().get(0), "2026-07-10");
+
+        ProcurementDocumentRequest request = mapper(defaultProperties())
+                .toCmpDocumentRequest(ArtikosProfileType.VIDA, nomina, documento);
+
+        assertThat(request.cmp().cmpDocumt().fecEmidcm()).isEqualTo("2026-07-10");
+        assertThat(request.cmp().cmpDocumt().fecComprb()).isEqualTo("2026-07-15");
     }
 
     @Test
@@ -281,6 +295,54 @@ class ProcurementDocumentMapperTest {
                 nomina.documentos().stream()
                         .map(documento -> withCodCtaPagoProveedor(documento, codCtaPagoProveedor))
                         .toList());
+    }
+
+    private Nomina withFechaNomina(Nomina nomina, String fechaNomina) {
+        NominaHeader header = nomina.cabecera();
+        return new Nomina(
+                nomina.msgCode(),
+                nomina.msgStatus(),
+                nomina.msgFromAddress(),
+                new NominaHeader(
+                        header.msgFrom(),
+                        header.msgTo(),
+                        header.msgDate(),
+                        header.msgSystem(),
+                        header.msgCode(),
+                        header.msgVersion(),
+                        header.numeroNomina(),
+                        header.tipoNomina(),
+                        fechaNomina,
+                        header.cantidadDocumentos()),
+                nomina.documentos());
+    }
+
+    private DocumentoContable withFechaEmision(DocumentoContable documento, String fechaEmision) {
+        return new DocumentoContable(
+                documento.secuencia(),
+                documento.rutProveedor(),
+                documento.proveedor(),
+                documento.nacional(),
+                documento.idDocumento(),
+                documento.usuario(),
+                documento.numeroDocumento(),
+                documento.tipoDocumento(),
+                documento.tipoErp(),
+                fechaEmision,
+                documento.fechaVencimiento(),
+                documento.fechaRecepcion(),
+                documento.fechaRecepSii(),
+                documento.urlDocumento(),
+                documento.observacion(),
+                documento.docCurrency(),
+                documento.usoIva(),
+                documento.montoNeto(),
+                documento.montoIva(),
+                documento.montoExento(),
+                documento.otrosImpuestos(),
+                documento.montoTotal(),
+                documento.referencias(),
+                documento.conciliaciones());
     }
 
     private DocumentoContable withCodCtaPagoProveedor(DocumentoContable documento, String codCtaPagoProveedor) {
