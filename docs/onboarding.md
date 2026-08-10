@@ -191,6 +191,7 @@ La documentación está separada por responsabilidad.
 | Operar el servicio | `docs/runbook.md` |
 | Diagnosticar errores conocidos | `docs/support-guide.md` |
 | Consultar Oracle | `docs/sql-queries.md` |
+| Entender ambientes y dependencias externas | `docs/environments-and-dependencies.md` |
 | Revisar infraestructura | `docs/infra-delivery.md` |
 | Revisar exposición mediante gateway | `docs/gateway-endpoints.md` |
 | Ejecutar pruebas locales E2E | `docs/local-e2e-testing.md` |
@@ -225,9 +226,10 @@ Al completar estos documentos debería ser posible comprender qué hace el siste
 
 ### Infraestructura y despliegue
 
-11. `docs/infra-delivery.md`
-12. `docs/gateway-endpoints.md`
-13. documentación de release y despliegue.
+11. `docs/environments-and-dependencies.md`
+12. `docs/infra-delivery.md`
+13. `docs/gateway-endpoints.md`
+14. documentación de release y despliegue.
 
 No es necesario estudiar toda la documentación antes de realizar una intervención. El mapa documental anterior puede utilizarse para profundizar únicamente en el área requerida.
 
@@ -498,6 +500,14 @@ Revisar:
 2. `asi-lookup.md`;
 3. documentación técnica;
 4. pruebas de integración/mapping.
+
+### Tengo que revisar configuración o una dependencia externa
+
+Revisar:
+
+1. `environments-and-dependencies.md`;
+2. `infra-delivery.md`;
+3. `support-guide.md` cuando exista una falla concreta.
 
 ### Tengo que desplegar un cambio
 
