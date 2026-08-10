@@ -11,6 +11,7 @@
 # Tabla de contenidos
 
 * [Descripción](#descripción)
+* [Onboarding y continuidad](#onboarding-y-continuidad)
 * [Autores](#autores)
 * [Tecnologías utilizadas](#tecnologías-utilizadas)
 * [API](#api)
@@ -34,6 +35,10 @@ El servicio consulta nóminas disponibles en Artikos, confirma la recepción, tr
 El estado funcional de cada nómina se almacena en la tabla `CONTROL_NOMINA`. La metadata técnica de ejecución queda registrada en las tablas Spring Batch `BATCH_*`.
 
 El contrato productivo inicial expone únicamente el endpoint de inicio del batch y el endpoint de health. Los endpoints operativos, diagnósticos y administrativos quedan deshabilitados por defecto en QA/PROD.
+
+## Onboarding y continuidad
+
+Si estás comenzando a mantener este servicio, utiliza [`docs/onboarding.md`](docs/onboarding.md) como punto de entrada. La guía resume el flujo funcional, los componentes críticos, la ruta de lectura recomendada, el primer diagnóstico de soporte y el mapa hacia la documentación especializada del repositorio.
 
 ## Autores
 
@@ -279,6 +284,7 @@ La documentación complementaria se encuentra en el directorio `docs/`:
 
 | Documento                      | Propósito                                                         |
 | ------------------------------ | ----------------------------------------------------------------- |
+| `docs/onboarding.md`           | Punto de entrada para nuevos mantenedores y mapa documental.      |
 | `docs/infra-delivery.md`       | Requerimientos de infraestructura, variables y permisos.          |
 | `docs/delivery-checklist.md`   | Checklist de entrega antes de merge/deploy.                       |
 | `docs/runbook.md`              | Procedimientos operativos y troubleshooting.                      |
