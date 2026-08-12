@@ -1,44 +1,81 @@
-# Runbook operativo
+# Runbook operativo productivo
 
-## Proposito del servicio
+## Propósito
 
-`atk-nomina-batch` procesa nominas de documentos contables disponibles en Artikos. El servicio consulta nominas con `NOMFACTERP`, confirma recepcion con `NOMFACTCONFIR`, procesa documentos localmente o contra Procurement segun configuracion, envia resultados con `NOMFACTRES` y registra el control funcional en `CONTROL_NOMINA`.
+`atk-nomina-batch` procesa nóminas de documentos contables disponibles en Artikos. El servicio consulta nóminas mediante `NOMFACTERP`, confirma recepción con `NOMFACTCONFIR`, procesa documentos contra Procurement, envía resultados con `NOMFACTRES` y registra trazabilidad funcional en `CONTROL_NOMINA`.
 
-La metadata tecnica del job queda en las tablas Spring Batch `BATCH_*`.
+La metadata técnica del job se mantiene en las tablas Spring Batch `BATCH_*`.
 
-## Entrega Infra y exposicion minima
+Este documento describe la operación productiva normal. Para incidentes consultar [`support-guide.md`](support-guide.md).
 
-Para la entrega inicial en ambientes gestionados por Infra, la aplicacion debe operar detras de CONC/Kong con exposicion minima:
+Para configuración, ambientes y ownership consultar [`environments-and-dependencies.md`](environments-and-dependencies.md).
+
+## 1. Contratos productivos expuestos
+
+La exposición normal del servicio debe mantenerse mínima:
 
 - `POST /api/v1/nominas/batch/start`
 - `GET /actuator/health`
 
-Los endpoints operativos GET, `CONTROL_NOMINA`, admin, diagnostico y Swagger no quedan disponibles por defecto en QA/PROD. El seguimiento normal se realiza por logs y Oracle usando las consultas de `docs/sql-queries.md`.
+Los endpoints operativos GET, administración, diagnóstico, `CONTROL_NOMINA` y Swagger no están habilitados por defecto en QA/PROD.
 
-Solo habilitar temporalmente `app.endpoints.operations.enabled=true`, `app.admin.enabled=true` o `app.diagnostics.enabled=true` con autorizacion operativa.
+El seguimiento productivo normal se realiza mediante:
 
-## Flujo funcional resumido
+```text
+jobExecutionId
+      |
+      v
+     logs
+      |
+      v
+BATCH_JOB_EXECUTION
+      |
+      v
+CONTROL_NOMINA
+```
 
-1. Un operador o scheduler inicia el batch por REST.
-2. El reader consulta `NOMFACTERP`.
-3. Si Artikos devuelve una nomina, el batch procesa esa nomina como item.
-4. El processor confirma recepcion con `NOMFACTCONFIR`.
-5. El processor valida los documentos de la nomina.
-6. El writer envia un `NOMFACTRES` por nomina.
-7. El writer actualiza `CONTROL_NOMINA`.
-8. El reader vuelve a consultar Artikos.
-9. Cuando Artikos responde `No hay nominas para procesar`, el step termina normalmente.
+Los endpoints operativos REST pueden utilizarse como apoyo adicional únicamente cuando estén habilitados y exista autorización operativa.
 
-`maxNominas` no es la condicion funcional de termino. Es solo un limite operativo de seguridad para evitar ejecuciones demasiado largas.
-
-## Perfiles soportados
+## 2. Perfiles soportados
 
 - `VIDA`
 - `GENERALES`
 
-Cada perfil usa configuracion Artikos propia: token, direcciones, RUT emisor y operaciones SOAP.
+Cada perfil posee configuración Artikos independiente.
 
-## Como iniciar el batch
+No se permiten dos ejecuciones simultáneas del mismo perfil. Los perfiles distintos pueden ejecutarse de forma independiente dentro de los límites configurados.
+
+## 3. Flujo funcional resumido
+
+1. Se inicia el batch mediante REST.
+2. El reader consulta `NOMFACTERP`.
+3. Si Artikos devuelve una nómina, esta se procesa como item completo.
+4. Se registra `CONTROL_NOMINA=PROCESSING`.
+5. Se ejecuta `NOMFACTCONFIR`.
+6. Se validan y transforman los documentos.
+7. Cada documento se envía a Procurement.
+8. Se construye `NOMFACTRES`.
+9. El writer envía `NOMFACTRES`.
+10. Se actualiza `CONTROL_NOMINA` con `OK`, `NOK` o `ERROR`.
+11. El reader vuelve a consultar Artikos.
+12. Cuando Artikos responde que no hay nóminas para procesar, el step termina normalmente.
+
+`maxNominas` es un límite operativo de seguridad. No es la condición funcional normal de término.
+
+## 4. Verificación previa
+
+Antes de iniciar una ejecución productiva:
+
+- verificar `GET /actuator/health`;
+- confirmar el perfil solicitado;
+- verificar que no exista una ejecución activa inesperada para el mismo perfil;
+- confirmar disponibilidad de Oracle;
+- confirmar que la configuración del ambiente corresponde al perfil y ambiente esperado;
+- ante dudas de endpoints, secretos u ownership, consultar `environments-and-dependencies.md`.
+
+No utilizar credenciales productivas en archivos locales ni modificar configuración para resolver incidentes sin autorización.
+
+## 5. Iniciar el batch
 
 Endpoint:
 
@@ -55,7 +92,7 @@ Ejemplo:
 }
 ```
 
-Ejemplo con limite operativo:
+Ejemplo con límite operacional:
 
 ```json
 {
@@ -79,208 +116,65 @@ Respuesta esperada:
 }
 ```
 
-Notas operativas:
+Registrar inmediatamente:
 
-- El endpoint responde inmediatamente.
-- El job sigue ejecutando en segundo plano.
-- El proceso consulta Artikos hasta que no haya mas nominas.
-- La cantidad de documentos por nomina es variable.
-- Cada nomina procesada genera una fila en `CONTROL_NOMINA`.
-- Cada nomina procesada genera un `NOMFACTRES`.
-- Si existe una ejecucion activa para el mismo perfil, el endpoint responde HTTP `409`.
-- Si `maxNominas` supera `atk.batch.max-nominas-per-run`, el endpoint responde HTTP `400`.
+- `jobExecutionId`;
+- `profile`;
+- timestamp aproximado de inicio.
 
-## Modo local XML controlado
+El endpoint responde antes de que el procesamiento termine. El job continúa en segundo plano.
 
-Si QA Artikos no tiene nominas disponibles, se puede usar `artikos.source.mode=local-xml` solo en ambiente local/controlado para validar parser, procesamiento, Procurement, generacion de `NOMFACTRES` y `CONTROL_NOMINA`.
+Respuestas operativas relevantes:
 
-En este modo no se consulta `NOMFACTERP`, no se confirma `NOMFACTCONFIR` y no se envia `NOMFACTRES` real a Artikos. La guia esta en `docs/local-e2e-testing.md`.
+- HTTP `409`: ya existe una ejecución activa para el mismo perfil;
+- HTTP `400`: parámetros inválidos, incluyendo un `maxNominas` superior al límite permitido.
 
-## Replay local antes de ejecucion remota real
+## 6. Seguimiento productivo
 
-Antes de ejecutar una nomina real en modo remoto completo, se recomienda:
+### 6.1 Logs
 
-1. Usar SoapUI para extraer el XML real de Artikos.
-2. Guardar el XML en una ruta local segura o en `src/test/resources/samples/artikos/captured/` solo si esta sanitizado/autorizado.
-3. Ejecutar la aplicacion con `artikos.source.mode=local-xml`.
-4. Mantener `artikos.confirm.enabled=false` y `artikos.result.enabled=false`.
-5. Validar parser, lookup ASI, request Procurement, response Procurement, `NOMFACTRES` local y `CONTROL_NOMINA`.
-6. Revisar evidencias y logs por `jobExecutionId`.
-7. Recién despues ejecutar `artikos.source.mode=remote`, siempre que la nomina siga disponible en Artikos y el equipo haya autorizado la prueba remota.
+Los logs utilizan contexto MDC con:
 
-Procedimiento completo: `docs/artikos-replay-local.md`.
+- `jobExecutionId`;
+- `profile`;
+- `numeroNomina`;
+- `operation`.
 
-## Primera ejecucion remota real
+Operaciones relevantes:
 
-La primera ejecucion remota real debe seguir el procedimiento `docs/artikos-remote-e2e.md`.
+- `NOMFACTERP`
+- `NOMFACTCONFIR`
+- `PROCUREMENT_POST_DOCUMENT`
+- `NOMFACTRES`
 
-En esta modalidad:
-
-- `artikos.source.mode=remote` consulta `NOMFACTERP` real.
-- `artikos.confirm.enabled=true` envia `NOMFACTCONFIR` real.
-- `artikos.result.enabled=true` envia `NOMFACTRES` real.
-- `procurement.integration.enabled=true` llama Procurement real.
-- `POST /api/v1/nominas/batch/start` sigue siendo el unico contrato productivo inicial.
-
-No ejecutar remoto si el replay local de la misma nomina no fue validado o si Artikos no confirma que la nomina sigue disponible.
-
-## Validacion Procurement
-
-Para validar Procurement en ambiente local/controlado se requiere activar el cliente y la integracion documental:
-
-```properties
-procurement.client.enabled=true
-procurement.integration.enabled=true
-```
-
-Si se quiere probar sin depender de Artikos remoto, usar modo XML local:
-
-```properties
-artikos.source.mode=local-xml
-artikos.source.local-xml-path=classpath:samples/ZSGRALES_Nom15961_v2.xml
-artikos.confirm.enabled=false
-artikos.result.enabled=false
-```
-
-Con `artikos.source.mode=local-xml`, confirmar en logs:
-
-- aparece `sourceMode=local-xml`;
-- aparece `Skipping Artikos NOMFACTCONFIR`;
-- aparece `Skipping Artikos NOMFACTRES send`;
-- no aparece llamada real a `NOMFACTERP`, `NOMFACTCONFIR` ni `NOMFACTRES`.
-
-Para revisar el resultado funcional:
-
-```sql
-SELECT JOB_EXECUTION_ID,
-       NUMERO_NOMINA,
-       TOTAL_DOCUMENTS,
-       TOTAL_OK,
-       TOTAL_NOK,
-       STATUS,
-       ERROR_MESSAGE,
-       CREATED_AT,
-       UPDATED_AT
-FROM CONTROL_NOMINA
-ORDER BY CREATED_AT DESC;
-```
-
-Interpretacion Procurement:
-
-- `statusCode=0`: documento OK.
-- `statusCode=-20` con mensaje de duplicado: OK idempotente. Se informa como documento OK y descripcion `Documento ya existia en Procurement/ASI`.
-- Otro `statusCode` funcional: documento NOK.
-- Timeout, HTTP `5xx`, respuesta no parseable o error de lookup/mapping: nomina `ERROR`, job `FAILED`.
-
-Para revisar logs, filtrar por:
+El filtro inicial recomendado es:
 
 ```text
 jobExecutionId=<id>
-operation=PROCUREMENT_POST_DOCUMENT
 ```
 
-Las evidencias sanitizadas del flujo local estan en `docs/evidence/procurement-local-e2e.md`.
+Cuando exista una nómina identificada, complementar con:
 
-## Como consultar estado del batch
-
-Endpoint:
-
-```http
-GET /api/v1/nominas/batch/{jobExecutionId}
+```text
+numeroNomina=<numero>
+operation=<operacion>
 ```
 
-En QA/PROD este endpoint puede no estar disponible porque los endpoints operativos se cargan solo si:
+Los tokens no deben aparecer completos en logs. Si se detecta un token completo, tratarlo como incidente de seguridad.
 
-```properties
-app.endpoints.operations.enabled=true
-```
+### 6.2 Metadata Spring Batch
 
-El seguimiento normal en QA/PROD debe realizarse por logs y Oracle usando las consultas de `docs/sql-queries.md`.
+Consultar `BATCH_JOB_EXECUTION` para determinar el estado técnico del job.
 
 Revisar principalmente:
 
-- `status`
-- `exitCode`
-- `exitDescription`
-- `startTime`
-- `endTime`
+- `STATUS`;
+- `EXIT_CODE`;
+- `EXIT_MESSAGE`;
+- `START_TIME`;
+- `END_TIME`.
 
-Estados esperados:
-
-- `STARTING`: el job fue solicitado y esta iniciando.
-- `STARTED`: el job esta ejecutando.
-- `COMPLETED`: el job termino correctamente.
-- `FAILED`: el job fallo por error tecnico, rechazo Artikos u Oracle.
-- `STOPPING` o `STOPPED`: detencion controlada.
-
-## Como consultar summary
-
-Endpoint:
-
-```http
-GET /api/v1/nominas/batch/{jobExecutionId}/summary
-```
-
-En QA/PROD este endpoint no queda disponible por defecto. Para soporte interno puede habilitarse temporalmente con `app.endpoints.operations.enabled=true`, solo con autorizacion operativa.
-
-El summary consolida resultados funcionales del job:
-
-- total de nominas procesadas;
-- total de documentos;
-- total OK;
-- total NOK;
-- total conciliaciones;
-- total distribuciones;
-- errores asociados.
-
-Los totales se calculan segun el XML real recibido desde Artikos. No se asume una cantidad fija de documentos, conciliaciones o distribuciones.
-
-## Como consultar resultado por nomina
-
-Endpoint:
-
-```http
-GET /api/v1/nominas/batch/{jobExecutionId}/results/{numeroNomina}
-```
-
-Usar este endpoint para revisar el resultado funcional de una nomina especifica dentro de una ejecucion.
-
-## Como revisar CONTROL_NOMINA
-
-Endpoints productivos:
-
-```http
-GET /api/v1/control-nomina/jobs/{jobExecutionId}
-GET /api/v1/control-nomina/jobs/{jobExecutionId}/nominas/{numeroNomina}
-```
-
-En QA/PROD estos endpoints no quedan disponibles por defecto. Usar SQL sobre Oracle como mecanismo normal de soporte. Las consultas estan en `docs/sql-queries.md`.
-
-`CONTROL_NOMINA` es la tabla funcional de control por nomina. Debe revisarse cuando:
-
-- el job queda `FAILED`;
-- una nomina queda `ERROR`;
-- se necesita validar cuantas nominas fueron procesadas;
-- se quiere confirmar si una nomina quedo `OK` o `NOK`.
-
-Estados funcionales:
-
-- `PROCESSING`: nomina tomada para procesamiento.
-- `OK`: nomina procesada y resultado enviado sin documentos NOK.
-- `NOK`: nomina procesada y resultado enviado con documentos NOK.
-- `ERROR`: error tecnico o rechazo que impidio cerrar la nomina correctamente.
-
-## Como revisar metadata Spring Batch
-
-Las tablas `BATCH_*` son metadata tecnica. Usarlas para revisar:
-
-- ejecuciones recientes;
-- parametros usados;
-- estado del job;
-- steps ejecutados;
-- stacktrace o exit message compacto.
-
-Tablas principales:
+Las tablas principales son:
 
 - `BATCH_JOB_INSTANCE`
 - `BATCH_JOB_EXECUTION`
@@ -289,37 +183,167 @@ Tablas principales:
 - `BATCH_STEP_EXECUTION`
 - `BATCH_STEP_EXECUTION_CONTEXT`
 
-Las consultas sugeridas estan en `docs/sql-queries.md`.
+Las consultas recomendadas están en [`sql-queries.md`](sql-queries.md).
 
-## Como interpretar estados
+### 6.3 CONTROL_NOMINA
+
+`CONTROL_NOMINA` representa el estado funcional de cada nómina.
+
+Revisar:
+
+- `JOB_EXECUTION_ID`;
+- `NUMERO_NOMINA`;
+- totales;
+- `STATUS`;
+- `ERROR_MESSAGE`;
+- timestamps.
+
+Estados:
+
+- `PROCESSING`: nómina tomada para procesamiento;
+- `OK`: nómina procesada correctamente;
+- `NOK`: procesamiento completado con documentos funcionalmente NOK;
+- `ERROR`: la nómina no pudo cerrarse correctamente por error técnico o rechazo que interrumpió el flujo.
+
+## 7. Interpretación de estados
 
 | Capa | Estado | Significado |
 | --- | --- | --- |
-| Spring Batch | `COMPLETED` | El job termino sin error tecnico. Puede ser porque no habia mas nominas o porque alcanzo `maxNominas`. |
-| Spring Batch | `FAILED` | El job fallo por error tecnico, rechazo Artikos u Oracle. |
-| `CONTROL_NOMINA` | `OK` | Nomina procesada correctamente. |
-| `CONTROL_NOMINA` | `NOK` | Nomina procesada con observaciones funcionales en documentos. |
-| `CONTROL_NOMINA` | `ERROR` | Nomina no pudo cerrarse correctamente. |
-| Artikos | `MsgStatus=0` | Operacion aceptada. |
-| Artikos | `MsgStatus!=0` | Respuesta funcional rechazada o con observacion. Revisar `MessageOut.LogMessage.MessageText`. |
+| Spring Batch | `STARTING` | Job solicitado y comenzando. |
+| Spring Batch | `STARTED` | Job ejecutándose. |
+| Spring Batch | `COMPLETED` | Job terminó sin error técnico. Puede haber nóminas `NOK`. |
+| Spring Batch | `FAILED` | El job terminó por una falla técnica o rechazo que interrumpió el procesamiento. |
+| Spring Batch | `STOPPING` / `STOPPED` | Detención controlada. |
+| `CONTROL_NOMINA` | `OK` | Nómina funcionalmente correcta. |
+| `CONTROL_NOMINA` | `NOK` | Nómina finalizada con documentos rechazados/observados. |
+| `CONTROL_NOMINA` | `ERROR` | Nómina no cerrada correctamente. |
+| Artikos | `MsgStatus=0` | Operación aceptada. |
+| Artikos | `MsgStatus!=0` | Rechazo u observación funcional; revisar mensaje Artikos. |
 
-## Que hacer ante errores
+Un job `COMPLETED` y una nómina `NOK` no son contradictorios: Spring Batch refleja el resultado técnico de la ejecución, mientras `CONTROL_NOMINA` refleja el resultado funcional de cada nómina.
 
-1. Consultar estado del job por REST.
-2. Revisar `BATCH_JOB_EXECUTION.EXIT_MESSAGE`.
-3. Buscar logs por `jobExecutionId`.
-4. Revisar `CONTROL_NOMINA` para el job.
-5. Si hay `numeroNomina`, revisar detalle de esa nomina.
-6. Clasificar si el error es:
-   - Artikos `NOMFACTERP`;
-   - Artikos `NOMFACTCONFIR`;
-   - Artikos `NOMFACTRES`;
-   - XML o parseo;
-   - Oracle;
-   - concurrencia operativa.
-7. Aplicar el escenario correspondiente en `docs/support-guide.md`.
+## 8. Ruta productiva de diagnóstico inicial
 
-## Como purgar metadata
+Ante una falla o resultado inesperado:
+
+1. Registrar `jobExecutionId`, `profile`, `numeroNomina` si existe y timestamp.
+2. Buscar logs por `jobExecutionId`.
+3. Consultar `BATCH_JOB_EXECUTION` y revisar `STATUS`, `EXIT_CODE` y `EXIT_MESSAGE`.
+4. Consultar `CONTROL_NOMINA` para el mismo `jobExecutionId`.
+5. Identificar la última `operation` relevante.
+6. Clasificar la falla:
+   - plataforma / gateway / Kubernetes;
+   - Spring Batch;
+   - `NOMFACTERP`;
+   - `NOMFACTCONFIR`;
+   - Procurement;
+   - `NOMFACTRES`;
+   - Oracle / ASI;
+   - parsing / mapping / procesamiento interno;
+   - resultado funcional de documentos.
+7. Aplicar el escenario correspondiente de [`support-guide.md`](support-guide.md).
+
+Si `app.endpoints.operations.enabled=true`, los endpoints REST operativos pueden utilizarse como evidencia complementaria, pero no son requisito para soporte productivo.
+
+## 9. Reglas de reintento
+
+Nunca decidir un reintento únicamente porque el job quedó `FAILED`.
+
+Antes de reintentar determinar hasta qué punto llegó la nómina:
+
+```text
+¿Se obtuvo la nómina?
+        |
+        v
+¿Se ejecutó NOMFACTCONFIR?
+        |
+        v
+¿Se enviaron documentos a Procurement?
+        |
+        v
+¿Se intentó NOMFACTRES?
+```
+
+Reglas:
+
+- no reenviar una nómina sin conocer su estado actual en Artikos;
+- revisar especialmente cualquier ejecución que alcanzó `NOMFACTCONFIR`;
+- si hubo llamadas Procurement, considerar efectos parciales antes de reintentar;
+- si se intentó `NOMFACTRES`, validar el estado Artikos antes de reenviar;
+- no modificar `CONTROL_NOMINA` como mecanismo normal de recuperación;
+- no eliminar `BATCH_*` para forzar un reintento;
+- distinguir retry técnico automático de reintento operativo/manual.
+
+## 10. Procurement
+
+Para diagnóstico de Procurement filtrar:
+
+```text
+jobExecutionId=<id>
+operation=PROCUREMENT_POST_DOCUMENT
+```
+
+Interpretación funcional conocida:
+
+- `statusCode=0`: documento OK;
+- `statusCode=-20` con mensaje de duplicado: éxito idempotente; se informa como OK;
+- otro `statusCode` funcional: documento NOK;
+- timeout, HTTP `5xx`, respuesta no parseable o error de lookup/mapping: puede llevar la nómina a `ERROR` y el job a `FAILED`.
+
+Si Procurement respondió satisfactoriamente pero el documento no aparece en ASI, no asumir falla del adapter. La investigación debe continuar en Procurement/ASI según ownership documentado.
+
+## 11. Endpoints operativos opcionales
+
+Cuando estén habilitados mediante:
+
+```properties
+app.endpoints.operations.enabled=true
+```
+
+pueden utilizarse como apoyo:
+
+```http
+GET /api/v1/nominas/batch/{jobExecutionId}
+GET /api/v1/nominas/batch/{jobExecutionId}/summary
+GET /api/v1/nominas/batch/{jobExecutionId}/results/{numeroNomina}
+GET /api/v1/control-nomina/jobs/{jobExecutionId}
+GET /api/v1/control-nomina/jobs/{jobExecutionId}/nominas/{numeroNomina}
+```
+
+No deben habilitarse permanentemente en producción sin autorización y controles correspondientes.
+
+## 12. Operaciones auxiliares y pruebas controladas
+
+### Modo local XML
+
+Para pruebas locales/controladas puede utilizarse:
+
+```properties
+artikos.source.mode=local-xml
+```
+
+En este modo no se consulta `NOMFACTERP`, no se confirma `NOMFACTCONFIR` y no se envía `NOMFACTRES` real a Artikos.
+
+Consultar:
+
+- [`local-e2e-testing.md`](local-e2e-testing.md)
+- [`artikos-replay-local.md`](artikos-replay-local.md)
+
+### Replay antes de una prueba remota
+
+Antes de ejecutar una nómina real en modo remoto completo se recomienda validar previamente un replay sanitizado/controlado cuando corresponda.
+
+El procedimiento completo está en [`artikos-replay-local.md`](artikos-replay-local.md).
+
+### Ejecución remota controlada
+
+Para una validación remota real consultar [`artikos-remote-e2e.md`](artikos-remote-e2e.md).
+
+No utilizar procedimientos de prueba como sustituto de la operación productiva normal.
+
+## 13. Operación administrativa: purga de metadata
+
+La purga de metadata Spring Batch es una operación administrativa independiente. No debe utilizarse para recuperar una nómina ni resolver un incidente funcional.
 
 Endpoint:
 
@@ -327,13 +351,13 @@ Endpoint:
 POST /api/v1/admin/batch-metadata/purge
 ```
 
-Este endpoint solo se carga si:
+Solo se carga si:
 
 ```properties
 app.admin.enabled=true
 ```
 
-Primero ejecutar siempre en modo simulacion:
+Ejecutar siempre primero en simulación:
 
 ```json
 {
@@ -343,7 +367,7 @@ Primero ejecutar siempre en modo simulacion:
 }
 ```
 
-Si el resultado es correcto y existe autorizacion operativa, ejecutar:
+Solo después de revisar el resultado y contar con autorización:
 
 ```json
 {
@@ -355,68 +379,46 @@ Si el resultado es correcto y existe autorizacion operativa, ejecutar:
 
 Reglas:
 
-- Nunca purga ejecuciones activas.
-- Por defecto no purga `FAILED`.
-- `FAILED` solo se considera con `includeFailed=true`.
-- Solo afecta tablas `BATCH_*`.
-- No elimina registros de `CONTROL_NOMINA`.
+- nunca purgar ejecuciones activas;
+- por defecto no purgar `FAILED`;
+- considerar `FAILED` solo con `includeFailed=true` y autorización;
+- la purga afecta únicamente `BATCH_*`;
+- no elimina `CONTROL_NOMINA`;
+- no revierte estados Artikos;
+- no revierte efectos ya ejecutados en Procurement/ASI.
 
-## Como revisar logs
-
-Los logs usan contexto MDC:
-
-- `jobExecutionId`
-- `profile`
-- `numeroNomina`
-- `operation`
-
-Operaciones Artikos:
-
-- `NOMFACTERP`
-- `NOMFACTCONFIR`
-- `NOMFACTRES`
-
-Buscar primero por:
-
-```text
-jobExecutionId=123
-numeroNomina=15960
-operation=NOMFACTRES
-```
-
-Los tokens no deben aparecer completos. Si se detecta un token completo en logs, se debe tratar como incidente de seguridad.
-
-## Consideraciones de seguridad
+## 14. Seguridad
 
 - No versionar `application-local.properties`.
-- No subir tokens, passwords ni connection strings.
-- Mantener `app.diagnostics.enabled=false` en produccion.
-- Mantener `app.admin.enabled=false` salvo que exista control corporativo de acceso.
-- El endpoint de purga debe protegerse con autenticacion y autorizacion antes de uso productivo.
-- Los secretos deben resolverse mediante Azure Key Vault, variables de entorno seguras o mecanismo administrado equivalente.
+- No subir tokens, passwords ni connection strings sensibles.
+- Mantener `app.diagnostics.enabled=false` en producción.
+- Mantener `app.admin.enabled=false` salvo autorización y control de acceso.
+- No copiar secretos en tickets, evidencias o logs.
+- Consultar `environments-and-dependencies.md` para clasificación y ubicación de configuración.
 
-## Checklist de operacion diaria
+## 15. Checklist de operación
 
-- Verificar `/actuator/health`.
-- Confirmar que Oracle esta disponible.
-- Confirmar que no hay jobs activos inesperados.
-- Iniciar batch para el perfil requerido.
-- Registrar `jobExecutionId`.
-- Monitorear logs por `jobExecutionId`.
-- Confirmar estado final `COMPLETED`.
-- Revisar summary.
-- Revisar `CONTROL_NOMINA` por status.
-- Escalar si hay registros `ERROR` o job `FAILED`.
+- [ ] Verificar `/actuator/health`.
+- [ ] Confirmar perfil a ejecutar.
+- [ ] Confirmar que no exista una ejecución activa inesperada para el mismo perfil.
+- [ ] Confirmar disponibilidad de Oracle.
+- [ ] Iniciar el batch.
+- [ ] Registrar `jobExecutionId`, `profile` y timestamp.
+- [ ] Monitorear logs por `jobExecutionId`.
+- [ ] Consultar `BATCH_JOB_EXECUTION` y confirmar estado técnico final.
+- [ ] Revisar `CONTROL_NOMINA` para identificar `OK`, `NOK` y `ERROR`.
+- [ ] Si el job está `FAILED` o existe una nómina `ERROR`, aplicar `support-guide.md`.
+- [ ] Documentar cualquier intervención o escalamiento realizado.
 
-## Checklist post-error
+## 16. Checklist post-incidente
 
-- Registrar `jobExecutionId`, `profile` y `numeroNomina` si existe.
-- Consultar `GET /api/v1/nominas/batch/{jobExecutionId}`.
-- Consultar `CONTROL_NOMINA`.
-- Revisar `BATCH_JOB_EXECUTION.EXIT_MESSAGE`.
-- Revisar logs filtrando por `jobExecutionId`.
-- Identificar operacion fallida: `NOMFACTERP`, `NOMFACTCONFIR`, `NOMFACTRES` u Oracle.
-- Revisar si hubo retry tecnico.
-- Confirmar si el error es funcional Artikos o tecnico.
-- No reintentar manualmente sin confirmar el estado de la nomina en Artikos.
-- Documentar accion tomada y resultado.
+- [ ] Registrar `jobExecutionId`, `profile`, `numeroNomina` y timestamp.
+- [ ] Revisar logs por `jobExecutionId`.
+- [ ] Revisar `BATCH_JOB_EXECUTION.EXIT_MESSAGE`.
+- [ ] Revisar `CONTROL_NOMINA`.
+- [ ] Identificar la operación fallida.
+- [ ] Confirmar si hubo retry técnico.
+- [ ] Determinar si hubo efectos en Artikos o Procurement.
+- [ ] No reintentar hasta conocer el estado externo de la nómina cuando corresponda.
+- [ ] Escalar utilizando la evidencia mínima definida en `support-guide.md`.
+- [ ] Documentar la acción tomada y el resultado.
