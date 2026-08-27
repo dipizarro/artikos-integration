@@ -191,6 +191,7 @@ La documentación está separada por responsabilidad.
 | Operar el servicio | `docs/runbook.md` |
 | Diagnosticar errores conocidos | `docs/support-guide.md` |
 | Consultar Oracle | `docs/sql-queries.md` |
+| Mantener Spring Batch, Oracle y metadata | `docs/technical-maintenance.md` |
 | Entender ambientes y dependencias externas | `docs/environments-and-dependencies.md` |
 | Revisar infraestructura | `docs/infra-delivery.md` |
 | Revisar exposición mediante gateway | `docs/gateway-endpoints.md` |
@@ -218,18 +219,19 @@ Al completar estos documentos debería ser posible comprender qué hace el siste
 6. `docs/procurement-mapping.md`
 7. `docs/asi-lookup.md`
 
-### Operación y soporte
+### Operación, soporte y mantenimiento
 
 8. `docs/runbook.md`
 9. `docs/support-guide.md`
 10. `docs/sql-queries.md`
+11. `docs/technical-maintenance.md`
 
 ### Infraestructura y despliegue
 
-11. `docs/environments-and-dependencies.md`
-12. `docs/infra-delivery.md`
-13. `docs/gateway-endpoints.md`
-14. documentación de release y despliegue.
+12. `docs/environments-and-dependencies.md`
+13. `docs/infra-delivery.md`
+14. `docs/gateway-endpoints.md`
+15. `docs/release-and-deployment.md`
 
 No es necesario estudiar toda la documentación antes de realizar una intervención. El mapa documental anterior puede utilizarse para profundizar únicamente en el área requerida.
 
@@ -442,7 +444,7 @@ Requerimiento / incidente
 
 No realizar modificaciones directas en `main`.
 
-El proceso detallado de release y despliegue se mantendrá en la documentación específica de continuidad operativa.
+El proceso detallado se encuentra en [`release-and-deployment.md`](release-and-deployment.md).
 
 ## 14. Decisiones arquitectónicas
 
@@ -483,6 +485,15 @@ Revisar:
 1. `batch-flow.md`
 2. `documentacion-tecnica-artikos-asi.md`.
 
+### Tengo que mantener Spring Batch u Oracle
+
+Revisar:
+
+1. `technical-maintenance.md`;
+2. `sql-queries.md`;
+3. `batch-flow.md`;
+4. `environments-and-dependencies.md` cuando aplique configuración por ambiente.
+
 ### Tengo que modificar integración Artikos
 
 Revisar:
@@ -513,7 +524,7 @@ Revisar:
 
 Revisar:
 
-1. documentación de release;
+1. `release-and-deployment.md`;
 2. pipeline;
 3. documentación de infraestructura;
 4. checklist correspondiente al ambiente.
