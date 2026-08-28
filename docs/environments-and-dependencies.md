@@ -4,38 +4,52 @@
 
 Este documento describe cómo se relaciona `atk-nomina-batch` con sus ambientes, fuentes de configuración y dependencias externas.
 
-Debe permitir a un mantenedor identificar:
+Su propósito es permitir que un mantenedor pueda responder rápidamente:
 
 - en qué ambiente está trabajando;
 - qué sistemas externos participan;
 - qué configuración necesita la aplicación;
 - qué valores son secretos;
-- dónde se administra cada configuración;
+- dónde debe administrarse cada configuración;
 - qué dependencia revisar ante una falla.
 
-Para configuración de infraestructura consultar [`infra-delivery.md`](infra-delivery.md).
+Este documento no contiene credenciales ni reemplaza la documentación técnica de infraestructura.
+
+Para configuración detallada consultar:
+
+[`infra-delivery.md`](infra-delivery.md)
+
+---
 
 ## 2. Principio de configuración
 
-La aplicación no debe depender de secretos almacenados en el repositorio.
+La aplicación no debe depender de valores sensibles almacenados dentro del repositorio.
+
+Conceptualmente, la configuración sigue el siguiente modelo:
 
 ```text
 Repositorio
     |
-    | properties + defaults seguros
+    | nombres de properties
+    | defaults seguros
+    |
     v
 Configuración del ambiente
     |
     +--> Azure App Configuration
-    |       -> parámetros no sensibles
+    |       |
+    |       +--> parámetros no sensibles
     |
     +--> Azure Key Vault
-            -> tokens
-            -> passwords
-            -> credenciales
+            |
+            +--> tokens
+            +--> passwords
+            +--> credenciales
 ```
 
-Nunca versionar:
+La aplicación recibe finalmente estos valores mediante la configuración administrada del ambiente.
+
+Nunca se deben versionar:
 
 - tokens Artikos;
 - passwords Oracle;
@@ -44,45 +58,83 @@ Nunca versionar:
 - archivos locales con credenciales;
 - planillas de parámetros que contengan secretos.
 
+---
+
 ## 3. Ambientes
+
+Los ambientes relevantes para la continuidad del servicio son:
 
 | Ambiente | Propósito | Integraciones reales |
 |---|---|---|
-| Local | Desarrollo, tests y replay | Configurable |
-| QA | Validación integrada | Servicios de prueba |
-| PRE | Validación previa a producción | Confirmar configuración efectiva |
+| Local | Desarrollo, pruebas y replay | Configurable |
+| QA | Validación integrada | Sí, contra servicios de prueba |
+| PRE | Validación previa a producción | Debe confirmarse configuración efectiva |
 | PROD | Operación productiva | Sí |
 
-### Local
+### 3.1 Local
 
-Puede utilizar:
+El ambiente local se utiliza para:
+
+- desarrollo;
+- pruebas automatizadas;
+- replay de XML;
+- diagnóstico controlado.
+
+Puede utilizar como fuente:
 
 ```properties
 artikos.source.mode=local-xml
 ```
 
-para evitar consumo remoto de nóminas.
+para evitar el consumo de una nómina remota.
 
-Consultar [`local-e2e-testing.md`](local-e2e-testing.md) y [`artikos-replay-local.md`](artikos-replay-local.md).
+También puede ejecutarse contra integraciones remotas cuando exista autorización y configuración apropiada.
 
-### QA
+Consultar:
 
-Se utiliza para validaciones integradas. Los parámetros y tokens deben provenir de los mecanismos corporativos de configuración.
+- [`local-e2e-testing.md`](local-e2e-testing.md)
+- [`artikos-replay-local.md`](artikos-replay-local.md)
 
-### PRE
+### 3.2 QA
 
-No asumir que PRE utiliza automáticamente las mismas dependencias que QA. Confirmar:
+QA se utiliza para validaciones integradas antes de promover cambios.
 
-- endpoint Artikos;
+Artikos dispone de servicios específicos para ambiente de pruebas.
+
+La especificación oficial distingue entre:
+
+```text
+Obtención de nómina
+    -> DocExtractor
+
+Confirmación / resultado
+    -> DocConnector
+```
+
+Los parámetros funcionales y tokens correspondientes al ambiente deben obtenerse desde los mecanismos corporativos de configuración.
+
+### 3.3 PRE
+
+PRE constituye el ambiente de validación anterior a producción dentro del ciclo de entrega de `artikos-integration`.
+
+La relación exacta entre PRE y los ambientes externos debe confirmarse en la configuración administrada vigente.
+
+En particular debe verificarse:
+
+- endpoint Artikos utilizado;
 - endpoint Procurement;
 - Oracle;
 - gateway;
-- secretos;
+- secretos asociados;
 - observabilidad.
 
-### PROD
+No asumir que PRE utiliza automáticamente las mismas dependencias que QA.
 
-Para procesamiento real deben estar alineadas, entre otras, estas propiedades:
+### 3.4 PROD
+
+PROD corresponde al servicio utilizado para procesamiento real de nóminas.
+
+Debe ejecutar las integraciones habilitadas:
 
 ```properties
 artikos.source.mode=remote
@@ -92,82 +144,145 @@ procurement.client.enabled=true
 procurement.integration.enabled=true
 ```
 
-Los valores concretos deben provenir de configuración administrada.
+Los valores concretos deben provenir de la configuración administrada y no del repositorio.
 
-## 4. Perfiles Artikos
+---
 
-La solución soporta:
+## 4. Perfiles funcionales Artikos
+
+La solución soporta dos perfiles:
 
 ```text
 VIDA
 GENERALES
 ```
 
-Cada perfil posee configuración independiente para:
+Cada perfil representa una configuración Artikos independiente.
+
+Para cada uno existen parámetros asociados a las tres operaciones:
 
 ```text
-NOMFACTERP
-NOMFACTCONFIR
-NOMFACTRES
+                    +------------------+
+                    |      Perfil      |
+                    | VIDA / GENERALES |
+                    +--------+---------+
+                             |
+          +------------------+------------------+
+          |                  |                  |
+          v                  v                  v
+     NOMFACTERP        NOMFACTCONFIR        NOMFACTRES
+   Consumo nómina       Confirmación         Resultado
 ```
 
 Los parámetros de un perfil no deben intercambiarse con los del otro.
 
+---
+
 ## 5. Contrato Artikos
+
+La integración utiliza tres acciones principales.
 
 ### NOMFACTERP
 
-Solicita una nómina disponible. Cuando no existen más nóminas, Artikos informa esa situación y el ciclo debe finalizar.
+Solicita una nómina disponible.
+
+Según la especificación Artikos, si existen nóminas pendientes el servicio selecciona la de fecha de procesamiento más antigua.
+
+Si no existen más nóminas, Artikos informa esta situación y el ciclo de consulta debe finalizar.
 
 ### NOMFACTCONFIR
 
-Confirma la correcta recepción de la nómina y afecta su estado funcional en Artikos.
+Confirma si la nómina obtenida fue correctamente recibida.
+
+Esta operación es relevante para el estado funcional de la cola Artikos.
+
+Si una nómina no queda correctamente confirmada, puede permanecer disponible para una solicitud posterior.
 
 ### NOMFACTRES
 
-Informa el resultado consolidado del procesamiento.
+Informa el resultado del procesamiento de una nómina.
 
-La definición contractual detallada corresponde a la especificación Artikos SAF v1.4.1.
+El resultado contiene:
+
+- número de nómina;
+- cantidad OK;
+- cantidad NOK;
+- cantidad informada;
+- resultado individual de documentos.
+
+La definición detallada de los mensajes corresponde a la especificación Artikos SAF v1.4.1.
+
+---
 
 ## 6. Endpoints Artikos
+
+Artikos separa las responsabilidades en dos Web Services.
+
+### Obtención de nómina
+
+Conceptualmente:
 
 ```text
 ARTIKOS_NOMINA_URL
         |
         v
-DocExtractorB2B
+AtkWS_DocExtractorB2B
         |
         v
 NOMFACTERP
 ```
 
+### Confirmación y resultado
+
+Conceptualmente:
+
 ```text
 ARTIKOS_CONNECTOR_URL
         |
         +--> NOMFACTCONFIR
+        |
         +--> NOMFACTRES
 ```
 
-Las URLs efectivas deben obtenerse desde la configuración vigente del ambiente. No hardcodear endpoints productivos en código o documentación operativa.
+Artikos dispone de endpoints diferentes para pruebas y producción.
+
+Las URLs efectivas utilizadas por la aplicación deben obtenerse desde la configuración vigente del ambiente.
+
+No hardcodear URLs Artikos dentro del código.
+
+---
 
 ## 7. Parámetros Artikos
 
-Entre los parámetros principales se encuentran:
+La especificación Artikos define parámetros comunes para la integración.
+
+Entre los más relevantes se encuentran:
 
 | Parámetro | Uso | Secreto |
 |---|---|---|
-| `Token` | Autenticación/invocación | Sí |
+| `Token` | Autenticación/invocación Artikos | **Sí** |
 | `MsgCode` | Acción solicitada | No |
-| `MsgFromAddress` | Origen | No |
-| `MsgCodFromAddress` | Identificación empresa | No |
-| `MsgToAddress` | Destino | No |
-| `MsgCodSis` | Sistema origen | No |
+| `MsgFromAddress` | Identificación del origen | No |
+| `MsgCodFromAddress` | Identificación de empresa | No |
+| `MsgToAddress` | Destino del mensaje | No |
+| `MsgCodSis` | Sistema de origen | No |
 
-Los tokens deben administrarse fuera de Git.
+El contrato utiliza:
+
+```text
+MsgToAddress = ARTIKOS
+MsgCodSis    = SAF
+```
+
+para este modelo de integración, sujeto siempre a la configuración entregada oficialmente para la empresa/perfil.
+
+Los tokens proporcionados por Artikos son secretos y deben administrarse fuera de Git.
+
+---
 
 ## 8. Variables principales de la aplicación
 
-### Oracle — datasource funcional
+### Oracle — datasource funcional/JPA
 
 ```text
 APP_DATASOURCE_URL
@@ -177,12 +292,7 @@ APP_DATASOURCE_DRIVER_CLASS_NAME
 APP_DB_SCHEMA
 ```
 
-Responsabilidades:
-
-- persistencia JPA de aplicación;
-- `CONTROL_NOMINA`;
-- `GRL_MAE_ITEM`;
-- `GRL_MAE_ITEM_DET`.
+Este datasource se utiliza para la persistencia funcional de aplicación y lookups ASI, incluyendo `CONTROL_NOMINA`, `GRL_MAE_ITEM` y `GRL_MAE_ITEM_DET`.
 
 ### Oracle — datasource Spring Batch
 
@@ -194,19 +304,9 @@ BATCH_DATASOURCE_DRIVER_CLASS_NAME
 SPRING_BATCH_JDBC_TABLE_PREFIX
 ```
 
-Responsabilidades:
+Este datasource se utiliza para el `JobRepository` y metadata técnica `BATCH_*`.
 
-- `JobRepository` Spring Batch;
-- metadata `BATCH_*`.
-
-La aplicación configura por defecto:
-
-```properties
-spring.batch.jdbc.initialize-schema=never
-spring.batch.jdbc.table-prefix=BACHPROCESS.BATCH_
-```
-
-Los valores efectivos pueden variar por ambiente y deben validarse contra la configuración administrada.
+La configuración base usa `spring.batch.jdbc.initialize-schema=never`, por lo que la aplicación no crea automáticamente las tablas Batch al arrancar.
 
 ### Procurement
 
@@ -222,7 +322,7 @@ ARTIKOS_NOMINA_URL
 ARTIKOS_CONNECTOR_URL
 ```
 
-### Tokens Artikos GENERALES
+### Tokens Artikos — GENERALES
 
 ```text
 ARTIKOS_GENERALES_CONSUMO_TOKEN
@@ -230,7 +330,7 @@ ARTIKOS_GENERALES_RESPUESTA_TOKEN
 ARTIKOS_GENERALES_RESULTADO_TOKEN
 ```
 
-### Tokens Artikos VIDA
+### Tokens Artikos — VIDA
 
 ```text
 ARTIKOS_VIDA_CONSUMO_TOKEN
@@ -238,11 +338,12 @@ ARTIKOS_VIDA_RESPUESTA_TOKEN
 ARTIKOS_VIDA_RESULTADO_TOKEN
 ```
 
-### Parámetros funcionales
+### Parámetros funcionales Artikos
 
 ```text
 ARTIKOS_GENERALES_MSG_COD_FROM_ADDRESS
 ARTIKOS_GENERALES_MSG_COD_EXTERNO
+
 ARTIKOS_VIDA_MSG_COD_FROM_ADDRESS
 ARTIKOS_VIDA_MSG_COD_EXTERNO
 ```
@@ -252,32 +353,52 @@ ARTIKOS_VIDA_MSG_COD_EXTERNO
 ```text
 ATK_BATCH_DEFAULT_MAX_NOMINAS
 ATK_BATCH_MAX_NOMINAS_PER_RUN
+
 ARTIKOS_HTTP_CONNECT_TIMEOUT_MS
 ARTIKOS_HTTP_READ_TIMEOUT_MS
 ```
+
+Para descripción técnica y permisos consultar:
+
+[`infra-delivery.md`](infra-delivery.md)
+
+---
 
 ## 9. Clasificación de configuración
 
 ### Secretos
 
-- passwords y usuarios sensibles Oracle;
-- tokens Artikos;
-- credenciales Procurement;
-- credenciales técnicas externas;
-- connection strings cuando la política corporativa las clasifique como sensibles.
+Deben almacenarse mediante un mecanismo seguro como Azure Key Vault.
+
+| Configuración | Clasificación |
+|---|---|
+| Tokens Artikos | Secreto |
+| Password Oracle | Secreto |
+| Credenciales Procurement | Secreto |
+| Credenciales técnicas externas | Secreto |
 
 ### Configuración no sensible
 
-- URLs de servicios;
-- `MsgCode` y códigos funcionales;
-- límites batch;
-- timeouts;
-- flags de integración;
-- schema/prefix cuando no revelen información sensible según política corporativa.
+Puede mantenerse mediante Azure App Configuration u otro mecanismo corporativo aprobado.
+
+| Configuración | Clasificación |
+|---|---|
+| URL Artikos | Configuración |
+| URL Procurement | Configuración |
+| `MsgCode` | Configuración |
+| `MsgCodFromAddress` | Configuración |
+| `MsgCodExterno` | Configuración |
+| límites batch | Configuración |
+| timeouts | Configuración |
+| flags de integración | Configuración |
+
+La clasificación anterior no reemplaza las políticas corporativas de seguridad.
+
+---
 
 ## 10. Oracle
 
-El adapter utiliza Oracle directamente para tres responsabilidades.
+El adapter utiliza Oracle directamente para tres responsabilidades diferentes.
 
 ### Control funcional
 
@@ -285,15 +406,23 @@ El adapter utiliza Oracle directamente para tres responsabilidades.
 CONTROL_NOMINA
 ```
 
-Permisos esperados: `SELECT`, `INSERT`, `UPDATE`.
+Permisos esperados:
 
-### Metadata Spring Batch
+```text
+SELECT
+INSERT
+UPDATE
+```
+
+### Metadata técnica Spring Batch
 
 ```text
 BATCH_*
 ```
 
-Spring Batch requiere lectura/escritura sobre su metadata. Los permisos `DELETE` dependen de la política de purga.
+Spring Batch requiere acceso de lectura/escritura sobre su metadata.
+
+Los permisos de eliminación dependen de la política de purga.
 
 ### Lookup ASI
 
@@ -302,11 +431,17 @@ GRL_MAE_ITEM
 GRL_MAE_ITEM_DET
 ```
 
-El adapter los utiliza para consulta. La inserción final del documento contable en ASI es responsabilidad de Procurement.
+El adapter utiliza estos objetos únicamente para consulta.
 
-Para mantenimiento consultar [`technical-maintenance.md`](technical-maintenance.md).
+La inserción del documento contable final en ASI es responsabilidad de Procurement.
+
+---
 
 ## 11. Procurement
+
+Procurement es una dependencia REST de `atk-nomina-batch`.
+
+Flujo:
 
 ```text
 Documento Artikos
@@ -315,7 +450,10 @@ Documento Artikos
 Mapping
       |
       v
-POST /api/v1/document
+Contrato Procurement
+      |
+      v
+POST /document
       |
       v
 Procurement
@@ -324,91 +462,167 @@ Procurement
 ASI
 ```
 
-Si `PROCUREMENT_INTEGRATION_ENABLED=false`, la aplicación puede iniciar pero no realizará envío real de documentos.
+La URL efectiva se resuelve mediante:
+
+```text
+PROCUREMENT_BASE_URL
+```
+
+Cuando:
+
+```text
+PROCUREMENT_INTEGRATION_ENABLED=false
+```
+
+la aplicación puede iniciar, pero el envío real de documentos queda deshabilitado.
+
+Esta propiedad debe verificarse especialmente ante una situación donde el batch procesa nóminas pero no se observan documentos enviados.
+
+---
 
 ## 12. Dependencias externas
 
 | Dependencia | Interfaz | Responsabilidad | Fallas habituales |
 |---|---|---|---|
-| Artikos | SOAP | Entrega, confirmación y resultado | red, timeout, estado funcional |
-| Procurement | REST | Recepción documento contable | HTTP, contrato, rechazo funcional |
+| Artikos | SOAP | Entrega, confirmación y resultado de nóminas | red, timeout, estado funcional |
+| Procurement | REST | Recepción del documento contable | HTTP, contrato, rechazo funcional |
 | Oracle / ASI | JDBC | Control, Batch y lookup | conectividad, permisos, datos |
-| Azure App Configuration | Config | Parámetros ambiente | ausencia/valor incorrecto |
-| Azure Key Vault | Secretos | Tokens y credenciales | permisos/referencia/secreto |
-| CONC/Kong | HTTP | Exposición API | routing/autorización |
-| Kubernetes / Flux | Runtime/deploy | Ejecución servicio | pod/deploy/recursos |
-| Observabilidad | Logs/APM | Diagnóstico | falta de correlación/evidencia |
+| Azure App Configuration | Configuración | Parámetros por ambiente | ausencia o valor incorrecto |
+| Azure Key Vault | Secretos | Tokens y credenciales | permisos, referencia o secreto |
+| Gateway / CONC-Kong | HTTP | Exposición de la API | routing, autorización |
+| Kubernetes | Runtime | Ejecución del servicio | pod, recursos, despliegue |
+| Observabilidad | Logs/APM | Diagnóstico | pérdida o falta de correlación |
+
+---
 
 ## 13. Ownership operativo
 
+La primera clasificación de una falla debe identificar qué sistema posee la responsabilidad.
+
 ```text
-atk-nomina-batch   -> equipo mantenedor
-Artikos            -> proveedor/responsable Artikos
-Procurement        -> equipo Procurement
-Oracle / ASI       -> ASI / DBA
-Kubernetes / red   -> Infraestructura
-Gateway            -> responsable API/Gateway
-Azure config       -> plataforma / Infra
+¿Dónde está la falla?
+       |
+       +--> atk-nomina-batch
+       |       -> equipo mantenedor
+       |
+       +--> Artikos
+       |       -> proveedor / responsable Artikos
+       |
+       +--> Procurement
+       |       -> equipo Procurement
+       |
+       +--> Oracle / ASI
+       |       -> ASI / DBA
+       |
+       +--> Kubernetes / red
+       |       -> Infraestructura
+       |
+       +--> Gateway
+       |       -> responsable API / Gateway
+       |
+       +--> Azure configuration
+               -> plataforma / Infra
 ```
 
-Evitar usar nombres personales como ownership principal.
+Evitar versionar nombres personales como ownership principal.
+
+La documentación debe mantenerse válida aunque cambien integrantes de los equipos.
+
+---
 
 ## 14. Checklist de validación de ambiente
+
+Antes de realizar una prueba integrada o habilitar un ambiente verificar:
 
 ### Aplicación
 
 - [ ] perfil Spring correcto;
-- [ ] aplicación inicia;
+- [ ] aplicación inicia correctamente;
 - [ ] `/actuator/health` disponible.
 
 ### Artikos
 
-- [ ] endpoints correctos;
+- [ ] `ARTIKOS_NOMINA_URL`;
+- [ ] `ARTIKOS_CONNECTOR_URL`;
 - [ ] configuración VIDA;
 - [ ] configuración GENERALES;
-- [ ] tokens disponibles por mecanismo seguro;
-- [ ] confirmación y resultado habilitados cuando corresponda.
+- [ ] tokens disponibles mediante mecanismo seguro;
+- [ ] confirmación habilitada;
+- [ ] resultado habilitado.
 
 ### Procurement
 
-- [ ] base URL correcta;
+- [ ] `PROCUREMENT_BASE_URL`;
 - [ ] conectividad;
-- [ ] integración habilitada según ambiente.
+- [ ] integración habilitada.
 
 ### Oracle
 
-- [ ] `APP_DATASOURCE_*` configurado;
-- [ ] `BATCH_DATASOURCE_*` configurado;
+- [ ] `APP_DATASOURCE_*` configurado y accesible;
+- [ ] `BATCH_DATASOURCE_*` configurado y accesible;
 - [ ] `APP_DB_SCHEMA` correcto;
 - [ ] `SPRING_BATCH_JDBC_TABLE_PREFIX` correcto;
-- [ ] acceso a `CONTROL_NOMINA`;
-- [ ] acceso a `BATCH_*`;
-- [ ] acceso a lookups ASI;
-- [ ] permisos adecuados.
+- [ ] `CONTROL_NOMINA`;
+- [ ] `BATCH_*`;
+- [ ] `GRL_MAE_ITEM`;
+- [ ] `GRL_MAE_ITEM_DET`;
+- [ ] permisos de los usuarios de servicio.
 
 ### Plataforma
 
-- [ ] App Configuration;
-- [ ] Key Vault;
+- [ ] configuración del ambiente;
+- [ ] secretos;
 - [ ] gateway;
-- [ ] Kubernetes/Flux;
-- [ ] logs/observabilidad.
+- [ ] Kubernetes;
+- [ ] logs / observabilidad.
+
+---
 
 ## 15. Diagnóstico por dependencia
 
-### No obtiene nómina
+### El batch no logra obtener nómina
 
-Revisar `ARTIKOS_NOMINA_URL`, token/perfil, `NOMFACTERP`, red, timeout y respuesta Artikos.
+Revisar:
 
-### Obtiene nómina pero falla confirmación
+```text
+ARTIKOS_NOMINA_URL
+token del perfil
+MsgCode NOMFACTERP
+conectividad
+timeout
+respuesta Artikos
+```
 
-Revisar `ARTIKOS_CONNECTOR_URL`, token de confirmación, `NOMFACTCONFIR` y estado de la nómina.
+### La nómina se obtiene pero falla la confirmación
 
-### Documentos no llegan a ASI
+Revisar:
 
-Primero determinar si `atk-nomina-batch` llamó Procurement. Si hubo respuesta satisfactoria del adapter hacia Procurement, continuar el análisis en Procurement/ASI según ownership.
+```text
+ARTIKOS_CONNECTOR_URL
+token de confirmación
+NOMFACTCONFIR
+estado de la nómina en Artikos
+```
 
-### Falla Oracle
+### Los documentos no llegan a ASI
+
+Separar el análisis:
+
+```text
+¿atk-nomina-batch llamó Procurement?
+              |
+         +----+----+
+         |         |
+        no        sí
+         |         |
+ configuración   revisar
+ / mapping       respuesta
+ / aplicación    Procurement
+```
+
+No asumir inicialmente que una ausencia en ASI implica una falla del adapter.
+
+### Falla acceso Oracle
 
 Revisar separadamente:
 
@@ -422,34 +636,82 @@ red
 permisos
 ```
 
-No asumir que una conexión correcta del datasource funcional demuestra que Spring Batch puede acceder a su metadata, ni viceversa.
+Una conexión correcta del datasource funcional no demuestra por sí sola que Spring Batch pueda acceder a su metadata, ni viceversa.
+
+---
 
 ## 16. Documentación externa Artikos
 
+La implementación fue construida considerando documentación entregada por Artikos.
+
 Referencias conocidas:
+
+### Especificación funcional/técnica
 
 ```text
 Especificación de Modelo de Integración con ERP
 desde Sistema de Administración de Facturas (SAF)
+
 Versión 1.4.1
 ```
 
-Las planillas de parámetros QA/PRD proporcionadas por Artikos contienen secretos y no deben versionarse en Git.
+Contiene:
 
-Ante diferencias entre parámetros históricos y configuración desplegada, validar la configuración administrada vigente.
+- modelo funcional;
+- `NOMFACTERP`;
+- `NOMFACTCONFIR`;
+- `NOMFACTRES`;
+- contratos XML;
+- estructura de nómina;
+- respuesta genérica de Web Services.
+
+### Parámetros QA
+
+Existe documentación proporcionada por Artikos con parámetros específicos del ambiente QA para los perfiles VIDA y GENERALES.
+
+Este recurso contiene secretos.
+
+**No versionar en Git.**
+
+### Parámetros PRD
+
+Existe documentación proporcionada por Artikos con parámetros específicos del ambiente productivo para los perfiles VIDA y GENERALES.
+
+Este recurso contiene secretos.
+
+**No versionar en Git.**
+
+Ante una diferencia entre parámetros históricos y configuración actualmente desplegada, la configuración administrada vigente debe validarse antes de realizar cambios.
+
+---
 
 ## 17. Fuentes de verdad
 
+Para evitar inconsistencias, utilizar la siguiente prioridad:
+
 ```text
-Comportamiento app   -> código + arquitectura
-Contrato Artikos     -> especificación oficial
-Valores por ambiente -> configuración administrada vigente
-Secretos             -> Key Vault / mecanismo corporativo
-Infraestructura      -> infra-delivery + IaC
-Operación            -> runbook / support-guide
-Mantenimiento        -> technical-maintenance
-Release              -> release-and-deployment
+Comportamiento de aplicación
+        -> código + arquitectura
+
+Contrato Artikos
+        -> especificación oficial Artikos
+
+Valores por ambiente
+        -> configuración administrada vigente
+
+Secretos
+        -> Key Vault / mecanismo corporativo
+
+Infraestructura
+        -> infra-delivery + repositorio IaC
+
+Operación
+        -> runbook / support-guide
 ```
+
+Nunca utilizar una copia local antigua de parámetros como única fuente para modificar producción.
+
+---
 
 ## 18. Documentación relacionada
 
@@ -458,21 +720,25 @@ Release              -> release-and-deployment
 | Arquitectura | [`architecture.md`](architecture.md) |
 | Onboarding | [`onboarding.md`](onboarding.md) |
 | Infraestructura | [`infra-delivery.md`](infra-delivery.md) |
-| Mantenimiento | [`technical-maintenance.md`](technical-maintenance.md) |
-| Release | [`release-and-deployment.md`](release-and-deployment.md) |
+| Mantenimiento técnico | [`technical-maintenance.md`](technical-maintenance.md) |
+| Release y despliegue | [`release-and-deployment.md`](release-and-deployment.md) |
+| Handover | [`handover-checklist.md`](handover-checklist.md) |
+| Gateway | [`gateway-endpoints.md`](gateway-endpoints.md) |
 | Operación | [`runbook.md`](runbook.md) |
 | Troubleshooting | [`support-guide.md`](support-guide.md) |
 | SQL soporte | [`sql-queries.md`](sql-queries.md) |
-| Handover | [`handover-checklist.md`](handover-checklist.md) |
+| Pruebas remotas Artikos | [`artikos-remote-e2e.md`](artikos-remote-e2e.md) |
 
-## 19. Información pendiente de validación externa
+---
 
-Debe confirmarse contra la plataforma desplegada:
+## 19. Información pendiente de validación
 
-- relación exacta de PRE con ambientes externos;
-- nombres/ubicaciones definitivas de configuración administrada;
-- ownership corporativo vigente;
-- diferencias entre parámetros históricos Artikos y configuración actual;
-- baseline productivo requerido para inicializar ramas corporativas `preproduccion`/`produccion`.
+La siguiente información debe confirmarse contra la plataforma actualmente desplegada:
 
-Estas validaciones no deben resolverse mediante suposiciones.
+- relación exacta de PRE con los ambientes externos Artikos y Procurement;
+- ubicación/nombre definitivo de las configuraciones administradas;
+- ownership corporativo vigente de cada dependencia;
+- cualquier diferencia entre los parámetros Artikos entregados originalmente y la configuración actualmente desplegada;
+- baseline productivo para inicializar las ramas corporativas `preproduccion` y `produccion`.
+
+Estas validaciones no deben resolverse mediante suposiciones ni copiando directamente parámetros históricos.
