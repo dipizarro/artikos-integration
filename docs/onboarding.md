@@ -194,6 +194,8 @@ La documentación está separada por responsabilidad.
 | Mantener Spring Batch, Oracle y metadata | `docs/technical-maintenance.md` |
 | Entender ambientes y dependencias externas | `docs/environments-and-dependencies.md` |
 | Revisar infraestructura | `docs/infra-delivery.md` |
+| Llevar un cambio a PRE/PROD | `docs/release-and-deployment.md` |
+| Revisar cierre y deuda transferida del handover | `docs/handover-checklist.md` |
 | Revisar exposición mediante gateway | `docs/gateway-endpoints.md` |
 | Ejecutar pruebas locales E2E | `docs/local-e2e-testing.md` |
 | Ejecutar replay de una nómina | `docs/artikos-replay-local.md` |
@@ -232,6 +234,10 @@ Al completar estos documentos debería ser posible comprender qué hace el siste
 13. `docs/infra-delivery.md`
 14. `docs/gateway-endpoints.md`
 15. `docs/release-and-deployment.md`
+
+### Cierre de continuidad
+
+16. `docs/handover-checklist.md`
 
 No es necesario estudiar toda la documentación antes de realizar una intervención. El mapa documental anterior puede utilizarse para profundizar únicamente en el área requerida.
 

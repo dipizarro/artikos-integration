@@ -40,6 +40,8 @@ El contrato productivo inicial expone únicamente el endpoint de inicio del batc
 
 Si estás comenzando a mantener este servicio, utiliza [`docs/onboarding.md`](docs/onboarding.md) como punto de entrada. La guía resume el flujo funcional, los componentes críticos, la ruta de lectura recomendada, el primer diagnóstico de soporte y el mapa hacia la documentación especializada del repositorio.
 
+El alcance final de continuidad y la deuda técnica transferida se registran en [`docs/handover-checklist.md`](docs/handover-checklist.md).
+
 ## Autores
 
 <img src="https://soap.zurichsantanderseguros.cl/soap-web/assets/img/Zurich-Santander-Chile.png" alt="Company logo" width="200">
@@ -157,12 +159,18 @@ Los valores no sensibles pueden configurarse en Azure App Configuration. Los sec
 
 ### Variables de entorno
 
+La aplicación utiliza dos datasources Oracle independientes: `APP_DATASOURCE_*` para persistencia funcional/JPA y `BATCH_DATASOURCE_*` para metadata Spring Batch.
+
 | Variable                                 | Descripción                                                                                            | Secreto |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------- |
 | `SPRING_PROFILES_ACTIVE`                 | Perfil Spring activo. Valores esperados: `qa`, `prod` o perfil local.                                  | No      |
-| `DB_URL`                                 | URL JDBC Oracle.                                                                                       | Sí      |
-| `DB_USERNAME`                            | Usuario de servicio Oracle.                                                                            | Sí      |
-| `DB_PASSWORD`                            | Password del usuario de servicio Oracle.                                                               | Sí      |
+| `APP_DATASOURCE_URL`                     | URL JDBC Oracle para aplicación/JPA.                                                                   | Sí      |
+| `APP_DATASOURCE_USERNAME`                | Usuario Oracle para aplicación/JPA.                                                                    | Sí      |
+| `APP_DATASOURCE_PASSWORD`                | Password Oracle para aplicación/JPA.                                                                   | Sí      |
+| `BATCH_DATASOURCE_URL`                   | URL JDBC Oracle para metadata Spring Batch.                                                            | Sí      |
+| `BATCH_DATASOURCE_USERNAME`              | Usuario Oracle para metadata Spring Batch.                                                             | Sí      |
+| `BATCH_DATASOURCE_PASSWORD`              | Password Oracle para metadata Spring Batch.                                                            | Sí      |
+| `APP_DB_SCHEMA`                          | Schema JPA de aplicación.                                                                              | No      |
 | `SPRING_BATCH_JDBC_TABLE_PREFIX`         | Prefijo de tablas Spring Batch. Usar prefijo de esquema si las tablas `BATCH_*` viven en otro esquema. | No      |
 | `PROCUREMENT_BASE_URL`                   | URL base del servicio Procurement.                                                                     | No      |
 | `PROCUREMENT_INTEGRATION_ENABLED`        | Habilita el envío real de documentos a Procurement.                                                    | No      |
@@ -213,7 +221,7 @@ SPRING_BATCH_JDBC_TABLE_PREFIX=BATCH_
 
 ### Permisos Oracle
 
-El usuario de servicio Oracle requiere acceso a los siguientes objetos:
+Los datasources Oracle requieren permisos según su responsabilidad:
 
 | Objeto             | Permisos requeridos                                            |
 | ------------------ | -------------------------------------------------------------- |
@@ -251,9 +259,12 @@ La aplicación requiere variables específicas por ambiente. Ejemplo de estructu
 ```bash
 docker run --rm --name atk-nomina-batch \
   -e SPRING_PROFILES_ACTIVE=qa \
-  -e DB_URL="jdbc:oracle:thin:@//host:1521/service" \
-  -e DB_USERNAME="REPLACE_ME" \
-  -e DB_PASSWORD="REPLACE_ME" \
+  -e APP_DATASOURCE_URL="jdbc:oracle:thin:@//host-app:1521/service" \
+  -e APP_DATASOURCE_USERNAME="REPLACE_ME" \
+  -e APP_DATASOURCE_PASSWORD="REPLACE_ME" \
+  -e BATCH_DATASOURCE_URL="jdbc:oracle:thin:@//host-batch:1521/service" \
+  -e BATCH_DATASOURCE_USERNAME="REPLACE_ME" \
+  -e BATCH_DATASOURCE_PASSWORD="REPLACE_ME" \
   -e PROCUREMENT_BASE_URL="https://procurement.internal" \
   -e PROCUREMENT_INTEGRATION_ENABLED=true \
   -e ARTIKOS_NOMINA_URL="https://artikos.example/Ws_B2BOut/AtkWS_DocExtractorB2B.asmx" \
@@ -282,18 +293,21 @@ curl -X POST http://localhost:8080/api/v1/nominas/batch/start \
 
 La documentación complementaria se encuentra en el directorio `docs/`:
 
-| Documento                      | Propósito                                                         |
-| ------------------------------ | ----------------------------------------------------------------- |
-| `docs/onboarding.md`           | Punto de entrada para nuevos mantenedores y mapa documental.      |
-| `docs/infra-delivery.md`       | Requerimientos de infraestructura, variables y permisos.          |
-| `docs/delivery-checklist.md`   | Checklist de entrega antes de merge/deploy.                       |
-| `docs/runbook.md`              | Procedimientos operativos y troubleshooting.                      |
-| `docs/gateway-endpoints.md`    | Matriz de exposición por gateway y reglas de publicación.         |
-| `docs/sql-queries.md`          | Consultas Oracle de soporte para Spring Batch y `CONTROL_NOMINA`. |
-| `docs/local-e2e-testing.md`    | Modo de ejecución local con XML.                                  |
-| `docs/artikos-replay-local.md` | Replay de XML Artikos antes de ejecución remota.                  |
-| `docs/artikos-remote-e2e.md`   | Validación end-to-end remota controlada.                          |
-| `docs/support-guide.md`        | Clasificación de errores y acciones de soporte.                   |
+| Documento                          | Propósito                                                         |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| `docs/onboarding.md`               | Punto de entrada para nuevos mantenedores y mapa documental.      |
+| `docs/infra-delivery.md`           | Requerimientos de infraestructura, variables y permisos.          |
+| `docs/delivery-checklist.md`       | Checklist de entrega antes de merge/deploy.                       |
+| `docs/release-and-deployment.md`   | Flujo GitHub -> GitLab -> PRE -> PROD.                             |
+| `docs/technical-maintenance.md`    | Mantenimiento Spring Batch, Oracle y metadata.                    |
+| `docs/handover-checklist.md`       | Checklist final de continuidad y deuda transferida.               |
+| `docs/runbook.md`                  | Procedimientos operativos y troubleshooting.                      |
+| `docs/gateway-endpoints.md`        | Matriz de exposición por gateway y reglas de publicación.         |
+| `docs/sql-queries.md`              | Consultas Oracle de soporte para Spring Batch y `CONTROL_NOMINA`. |
+| `docs/local-e2e-testing.md`        | Modo de ejecución local con XML.                                  |
+| `docs/artikos-replay-local.md`     | Replay de XML Artikos antes de ejecución remota.                  |
+| `docs/artikos-remote-e2e.md`       | Validación end-to-end remota controlada.                          |
+| `docs/support-guide.md`            | Clasificación de errores y acciones de soporte.                   |
 
 ## Notas
 

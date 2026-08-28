@@ -282,14 +282,31 @@ Los tokens proporcionados por Artikos son secretos y deben administrarse fuera d
 
 ## 8. Variables principales de la aplicación
 
-### Oracle
+### Oracle — datasource funcional/JPA
 
 ```text
-DB_URL
-DB_USERNAME
-DB_PASSWORD
+APP_DATASOURCE_URL
+APP_DATASOURCE_USERNAME
+APP_DATASOURCE_PASSWORD
+APP_DATASOURCE_DRIVER_CLASS_NAME
+APP_DB_SCHEMA
+```
+
+Este datasource se utiliza para la persistencia funcional de aplicación y lookups ASI, incluyendo `CONTROL_NOMINA`, `GRL_MAE_ITEM` y `GRL_MAE_ITEM_DET`.
+
+### Oracle — datasource Spring Batch
+
+```text
+BATCH_DATASOURCE_URL
+BATCH_DATASOURCE_USERNAME
+BATCH_DATASOURCE_PASSWORD
+BATCH_DATASOURCE_DRIVER_CLASS_NAME
 SPRING_BATCH_JDBC_TABLE_PREFIX
 ```
+
+Este datasource se utiliza para el `JobRepository` y metadata técnica `BATCH_*`.
+
+La configuración base usa `spring.batch.jdbc.initialize-schema=never`, por lo que la aplicación no crea automáticamente las tablas Batch al arrancar.
 
 ### Procurement
 
@@ -541,12 +558,15 @@ Antes de realizar una prueba integrada o habilitar un ambiente verificar:
 
 ### Oracle
 
-- [ ] conexión disponible;
+- [ ] `APP_DATASOURCE_*` configurado y accesible;
+- [ ] `BATCH_DATASOURCE_*` configurado y accesible;
+- [ ] `APP_DB_SCHEMA` correcto;
+- [ ] `SPRING_BATCH_JDBC_TABLE_PREFIX` correcto;
 - [ ] `CONTROL_NOMINA`;
 - [ ] `BATCH_*`;
 - [ ] `GRL_MAE_ITEM`;
 - [ ] `GRL_MAE_ITEM_DET`;
-- [ ] permisos del usuario de servicio.
+- [ ] permisos de los usuarios de servicio.
 
 ### Plataforma
 
@@ -604,16 +624,19 @@ No asumir inicialmente que una ausencia en ASI implica una falla del adapter.
 
 ### Falla acceso Oracle
 
-Revisar:
+Revisar separadamente:
 
 ```text
-DB_URL
-DB_USERNAME
+APP_DATASOURCE_*
+BATCH_DATASOURCE_*
+APP_DB_SCHEMA
+SPRING_BATCH_JDBC_TABLE_PREFIX
 secreto/password
 red
 permisos
-schema BATCH_*
 ```
+
+Una conexión correcta del datasource funcional no demuestra por sí sola que Spring Batch pueda acceder a su metadata, ni viceversa.
 
 ---
 
@@ -697,6 +720,9 @@ Nunca utilizar una copia local antigua de parámetros como única fuente para mo
 | Arquitectura | [`architecture.md`](architecture.md) |
 | Onboarding | [`onboarding.md`](onboarding.md) |
 | Infraestructura | [`infra-delivery.md`](infra-delivery.md) |
+| Mantenimiento técnico | [`technical-maintenance.md`](technical-maintenance.md) |
+| Release y despliegue | [`release-and-deployment.md`](release-and-deployment.md) |
+| Handover | [`handover-checklist.md`](handover-checklist.md) |
 | Gateway | [`gateway-endpoints.md`](gateway-endpoints.md) |
 | Operación | [`runbook.md`](runbook.md) |
 | Troubleshooting | [`support-guide.md`](support-guide.md) |
@@ -712,6 +738,7 @@ La siguiente información debe confirmarse contra la plataforma actualmente desp
 - relación exacta de PRE con los ambientes externos Artikos y Procurement;
 - ubicación/nombre definitivo de las configuraciones administradas;
 - ownership corporativo vigente de cada dependencia;
-- cualquier diferencia entre los parámetros Artikos entregados originalmente y la configuración actualmente desplegada.
+- cualquier diferencia entre los parámetros Artikos entregados originalmente y la configuración actualmente desplegada;
+- baseline productivo para inicializar las ramas corporativas `preproduccion` y `produccion`.
 
 Estas validaciones no deben resolverse mediante suposiciones ni copiando directamente parámetros históricos.

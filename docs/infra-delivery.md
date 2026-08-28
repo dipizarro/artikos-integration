@@ -15,11 +15,17 @@ Para la separación entre configuración, secretos, ambientes y ownership consul
 
 ## Required variables
 
+La aplicación utiliza dos datasources Oracle independientes: `APP_DATASOURCE_*` para persistencia funcional/JPA y `BATCH_DATASOURCE_*` para metadata Spring Batch.
+
 | Variable | Descripción | Secreto | Ejemplo no sensible |
 | --- | --- | --- | --- |
-| `DB_URL` | JDBC URL Oracle del servicio | Sí | `jdbc:oracle:thin:@//host:1521/service` |
-| `DB_USERNAME` | Usuario de servicio Oracle | Sí | `ATK_BATCH_SVC` |
-| `DB_PASSWORD` | Password del usuario Oracle | Sí | `KEY_VAULT_SECRET` |
+| `APP_DATASOURCE_URL` | JDBC URL Oracle para aplicación/JPA | Sí | `jdbc:oracle:thin:@//host:1521/service` |
+| `APP_DATASOURCE_USERNAME` | Usuario Oracle para aplicación/JPA | Sí | `ATK_APP_SVC` |
+| `APP_DATASOURCE_PASSWORD` | Password datasource aplicación/JPA | Sí | `KEY_VAULT_SECRET` |
+| `BATCH_DATASOURCE_URL` | JDBC URL Oracle para Spring Batch | Sí | `jdbc:oracle:thin:@//host:1521/service` |
+| `BATCH_DATASOURCE_USERNAME` | Usuario Oracle para Spring Batch | Sí | `ATK_BATCH_SVC` |
+| `BATCH_DATASOURCE_PASSWORD` | Password datasource Spring Batch | Sí | `KEY_VAULT_SECRET` |
+| `APP_DB_SCHEMA` | Schema JPA de aplicación | No | `ASI` |
 | `SPRING_BATCH_JDBC_TABLE_PREFIX` | Prefijo/schema de tablas Spring Batch | No | `BACHPROCESS.BATCH_` |
 | `PROCUREMENT_BASE_URL` | URL base del servicio Procurement | No | `https://procurement.internal` |
 | `PROCUREMENT_INTEGRATION_ENABLED` | Habilita envío real a Procurement | No | `true` |
@@ -40,14 +46,14 @@ Para la separación entre configuración, secretos, ambientes y ownership consul
 | `ARTIKOS_HTTP_CONNECT_TIMEOUT_MS` | Timeout conexión SOAP | No | `5000` |
 | `ARTIKOS_HTTP_READ_TIMEOUT_MS` | Timeout lectura SOAP | No | `30000` |
 
-## Oracle schemas and service user
+## Oracle schemas and service users
 
 La aplicación usa Oracle para:
 
-- `CONTROL_NOMINA`: control funcional por nómina.
-- `GRL_MAE_ITEM`: lookup ASI para Procurement.
-- `GRL_MAE_ITEM_DET`: lookup ASI para Procurement.
-- `BATCH_*`: metadata técnica Spring Batch.
+- `CONTROL_NOMINA`: control funcional por nómina, mediante el datasource de aplicación.
+- `GRL_MAE_ITEM`: lookup ASI para Procurement, mediante el datasource de aplicación.
+- `GRL_MAE_ITEM_DET`: lookup ASI para Procurement, mediante el datasource de aplicación.
+- `BATCH_*`: metadata técnica Spring Batch, mediante el datasource Batch.
 
 Las tablas `BATCH_*` pueden estar en un esquema separado, por ejemplo `BACHPROCESS`. En ese caso configurar:
 
@@ -55,7 +61,9 @@ Las tablas `BATCH_*` pueden estar en un esquema separado, por ejemplo `BACHPROCE
 SPRING_BATCH_JDBC_TABLE_PREFIX=BACHPROCESS.BATCH_
 ```
 
-El usuario de servicio debe tener permisos suficientes, idealmente mediante rol corporativo:
+La aplicación configura `spring.batch.jdbc.initialize-schema=never`; no debe asumirse que las tablas Batch serán creadas automáticamente durante el arranque.
+
+Los usuarios de servicio deben tener permisos suficientes, idealmente mediante roles corporativos:
 
 | Objeto | Permisos requeridos |
 | --- | --- |
@@ -68,6 +76,8 @@ El usuario de servicio debe tener permisos suficientes, idealmente mediante rol 
 | `BATCH_JOB_EXECUTION_CONTEXT` | `SELECT`, `INSERT`, `UPDATE`, `DELETE` según política de purga |
 | `BATCH_STEP_EXECUTION` | `SELECT`, `INSERT`, `UPDATE`, `DELETE` según política de purga |
 | `BATCH_STEP_EXECUTION_CONTEXT` | `SELECT`, `INSERT`, `UPDATE`, `DELETE` según política de purga |
+
+Para el modelo de mantenimiento y purga consultar `docs/technical-maintenance.md`.
 
 ## Endpoint exposure
 
