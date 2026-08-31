@@ -1,14 +1,40 @@
 # Documentación técnica — Integración Artikos / Procurement / ASI
 
-## 1. Propósito y alcance
+## 1. Introducción
+
+### 1.1 Propósito
 
 Este documento describe la solución implementada en el proyecto `atk-nomina-batch` del repositorio `artikos-integration`. La aplicación es un adapter batch construido con Java 17, Spring Boot 3.3.5, Spring Batch, Spring Data JPA y Oracle. Su responsabilidad es obtener nóminas de documentos contables desde Artikos, confirmar su recepción, transformar y enviar cada documento a Procurement, y comunicar a Artikos el resultado consolidado.
 
-El contenido se basa exclusivamente en código, propiedades, migraciones, pruebas, muestras y manifiestos versionados. Los ejemplos están sanitizados. No se incluyen tokens, contraseñas, usuarios, cadenas JDBC ni credenciales reales.
+El contenido se basa exclusivamente en código, propiedades, migraciones, pruebas, muestras, manifiestos y documentación versionada en el repositorio. Los ejemplos están sanitizados. No se incluyen tokens, contraseñas, usuarios, cadenas JDBC ni credenciales reales.
+
+### 1.2 Alcance
+
+El documento cubre la arquitectura, componentes, flujo funcional, contratos, persistencia, configuración, manejo de errores, idempotencia, despliegue, validación, consideraciones productivas y diagnóstico técnico de la solución.
 
 Una precisión de alcance: el código del adapter no inserta directamente documentos en tablas Procurement/ASI. Envía un contrato JSON CMP al endpoint de Procurement; la persistencia documental en ASI es responsabilidad del servicio Procurement. El adapter sí accede directamente a `CONTROL_NOMINA`, `GRL_MAE_ITEM`, `GRL_MAE_ITEM_DET` y a la metadata `BATCH_*`.
 
-## 2. Vista de arquitectura
+Los procedimientos operativos detallados, mantenimiento, troubleshooting extendido, ambientes y ciclo de release/despliegue se mantienen en documentos especializados del repositorio y se referencian al final para evitar duplicación.
+
+### 1.3 Audiencia
+
+Este documento está dirigido principalmente a desarrolladores, mantenedores, personal de soporte técnico, arquitectura, DevOps y equipos responsables de la continuidad de las integraciones Artikos, Procurement y ASI.
+
+### 1.4 Estado y baseline documental
+
+La presente documentación representa el estado **as-built** de la solución al cierre del proyecto y debe utilizarse como referencia técnica del sistema productivo.
+
+- Repositorio canónico: `dipizarro/artikos-integration`.
+- Fuente maestra editable: `docs/documentacion-tecnica-artikos-asi.md`.
+- Branch corporativa de referencia al inicio de esta formalización: `main`.
+- Commit baseline de referencia: `8cab64a487980d89dae84f50311c533e340e7829`.
+- Estado de la solución: productiva / cierre de proyecto.
+
+El archivo Word de entrega que se genere a partir de esta documentación será un artefacto de publicación. Las modificaciones futuras deben realizarse primero sobre esta fuente versionada y luego regenerar una nueva versión del entregable.
+
+## 2. Arquitectura de la solución
+
+### 2.1 Vista general
 
 ```text
 Usuario/sistema
@@ -37,6 +63,19 @@ nominaDocumentosContablesJob / processNominaDocumentosStep
 Spring Batch -> metadata BATCH_* (BATCH datasource)
 Procurement -> inserción documental ASI (fuera del código de este adapter)
 ```
+
+### 2.2 Límites y responsabilidades
+
+| Componente | Responsabilidad principal |
+| --- | --- |
+| Artikos | Publicar nóminas y recibir confirmación y resultado consolidado |
+| `atk-nomina-batch` / `artikos-integration` | Orquestar el proceso, transformar datos, aplicar mapping/homologación, controlar estado e integrar sistemas |
+| Procurement | Recibir el contrato CMP y gestionar la persistencia documental hacia ASI |
+| ASI / Oracle | Proveer homologaciones y persistir/controlar información funcional y técnica según la responsabilidad de cada componente |
+
+El límite más importante es que `artikos-integration` no ejecuta la inserción documental final en ASI. Su responsabilidad termina en la construcción y envío del contrato esperado por Procurement, además de sus propios controles y lookups Oracle.
+
+### 2.3 Modelo de ejecución
 
 La unidad del step es una nómina completa (`ArtikosFetchedNomina`). El step es chunk-oriented y usa el transaction manager del datasource APP. El tamaño se configura con `atk.batch.real.chunk-size`; el valor versionado es 1, coherente con una confirmación y un resultado remoto por nómina.
 
@@ -337,9 +376,9 @@ El `Dockerfile` es multi-stage: compila con Maven/JDK 17 ejecutando `mvn clean p
 
 Kubernetes usa Kustomize. La base contiene `Deployment` y `Service ClusterIP` (80 -> 8080); solicita 64m/64Mi y limita 300m/1024Mi, usa AppArmor runtime/default e image pull secret. El overlay dev agrega ingress, afinidad, réplicas, límites y variables Azure. La imagen concreta y reconciliación final se administran en la cadena CI/IaC/Flux.
 
-## 13. Estado actual de pruebas en preproducción
+## 13. Estado de validación de la solución
 
-De acuerdo con el estado de validación reportado para preproducción:
+La solución completó su ciclo de construcción, pruebas, preproducción y paso a producción. Durante las validaciones previas al go-live se confirmó, entre otros aspectos, que:
 
 - La aplicación levanta correctamente en Kubernetes.
 - Azure App Configuration y Key Vault resuelven la configuración y los secretos requeridos.
@@ -352,11 +391,12 @@ De acuerdo con el estado de validación reportado para preproducción:
 - Procurement es alcanzable mediante la ruta configurada.
 - El problema de certificados/truststore observado durante las pruebas fue resuelto.
 - Artikos responde correctamente a `NOMFACTRES`.
-- Los casos pendientes observados dependen principalmente de datos maestros ASI, reglas funcionales de tipos de documento o respuestas del servicio Procurement.
 
-Esta sección registra el estado de las pruebas informado; no implica que todos los tipos de documento, combinaciones de datos maestros o respuestas funcionales posibles hayan sido certificados.
+El servicio fue posteriormente validado y desplegado en producción. Por lo tanto, esta sección debe interpretarse como evidencia del proceso de certificación previo y no como indicación de que el sistema permanezca en preproducción.
 
-## 14. Consideraciones para producción
+La validación no implica que todos los tipos de documento, combinaciones posibles de datos maestros o respuestas funcionales de sistemas externos hayan sido certificados exhaustivamente. Los comportamientos no cubiertos continúan sujetos a las reglas funcionales y operativas documentadas.
+
+## 14. Consideraciones para producción y limitaciones conocidas
 
 - Mantener `artikos.source.mode=remote`, confirmación/resultado y ambas capas Procurement habilitadas sólo tras validar endpoints y contratos del ambiente.
 - Deshabilitar diagnóstico, administración, endpoints operativos no publicados, Swagger y API docs; proteger la exposición con el gateway corporativo.
@@ -367,9 +407,11 @@ Esta sección registra el estado de las pruebas informado; no implica que todos 
 - Monitorear `actuator/health`, estados `BATCH_*`, `CONTROL_NOMINA`, latencia SOAP/REST y acumulación de metadata.
 - Considerar que `BatchResultStore` es memoria local: las consultas de detalle no sobreviven reinicios ni se comparten entre réplicas.
 - Verificar unicidad global de número de nómina o evolucionar la política para incluir empresa/perfil.
-- Ejecutar pruebas integrales con una nómina en estados Artikos válidos antes del go-live.
+- Ejecutar pruebas integrales con una nómina en estados Artikos válidos antes de cualquier cambio relevante de ambiente o integración.
 
-## 15. Troubleshooting
+## 15. Diagnóstico técnico
+
+Esta sección resume síntomas técnicos frecuentes. Para procedimientos operativos completos, recuperación, reintentos seguros y escalamiento, consultar `docs/runbook.md` y `docs/support-guide.md`.
 
 ### PKIX certificate path
 
@@ -395,14 +437,6 @@ El XML contiene un tipo fuera de `FEC/33`, `FCE/34`, `NDC/56`, `ECC/61`. Corregi
 
 La búsqueda devolvió más de una homologación para empresa+cuenta+sistema+impuesto. Revisar duplicidad/vigencia y claves (período, moneda, ítem) en ASI. El servicio rechaza la selección arbitraria y genera un error de mapping para ese documento; la frontera documental lo convierte en `NOK` y continúa con los documentos siguientes.
 
-### Diagnóstico operativo adicional
-
-- `MsgStatus=1` en confirmación: validar que la nómina esté “En Integración”.
-- `MsgStatus=1` en resultado: validar que esté “Recibida” y revisar XML generado.
-- Job termina sin filas: Artikos no tenía nóminas o se alcanzó el límite; revisar logs de reader.
-- `statusCode=-20`: confirmar que corresponde al duplicado esperado; el adapter lo contabiliza OK.
-- `CONTROL_NOMINA=PROCESSING` persistente: revisar metadata/exit description y logs; la política permite reproceso, por lo que debe coordinarse para evitar dobles acciones externas.
-
 ## 16. Evidencia revisada
 
 Se revisó el inventario completo versionado, excluyendo artefactos generados (`target`, logs y metadata Git), y se profundizó en:
@@ -415,11 +449,28 @@ Se revisó el inventario completo versionado, excluyendo artefactos generados (`
 - `kubernetes/base` y `kubernetes/overlays/dev`: deployment, service, ingress, kustomization y patches.
 - Documentos `docs/`, ADR, runbooks, guías de mapping/integración/error y evidencias sanitizadas.
 
-## 17. Referencias internas
+## 17. Documentación relacionada
 
 Código fuente de mayor relevancia: `NominaBatchJobConfig`, `ArtikosNominaItemReader`, `ArtikosNominaItemProcessor`, `ArtikosNominaResultItemWriter`, `NominaProcessingService`, `ProcurementClient`, `ProcurementDocumentMapper`, `ProcurementMappingLookupService`, `ControlNominaService`, `DataSourceConfig` y las migraciones `V000`–`V002`.
 
-Documentación complementaria existente: `docs/architecture.md`, `docs/batch-flow.md`, `docs/endpoints.md`, `docs/error-handling.md`, `docs/procurement-mapping.md`, `docs/procurement-integration.md`, `docs/infra-delivery.md`, `docs/runbook.md` y ADR-003.
+Documentación complementaria existente:
+
+- `README.md` — portada del producto y punto de entrada general.
+- `docs/onboarding.md` — guía inicial y mapa documental para nuevos mantenedores.
+- `docs/architecture.md` — arquitectura as-built de alto nivel.
+- `docs/batch-flow.md` — detalle del flujo Spring Batch.
+- `docs/endpoints.md` — contratos REST.
+- `docs/error-handling.md` — clasificación y manejo de errores.
+- `docs/procurement-mapping.md` — reglas de mapping hacia Procurement.
+- `docs/procurement-integration.md` — integración REST Procurement.
+- `docs/environments-and-dependencies.md` — ambientes, configuración y dependencias externas.
+- `docs/infra-delivery.md` — infraestructura y artefactos de despliegue.
+- `docs/runbook.md` — operación normal del servicio.
+- `docs/support-guide.md` — troubleshooting y soporte productivo.
+- `docs/release-and-deployment.md` — ciclo de cambio, release y despliegue GitHub/GitLab cliente.
+- `docs/technical-maintenance.md` — mantenimiento técnico, Spring Batch, Oracle y metadata.
+- `docs/handover-checklist.md` — checklist final de continuidad y handover.
+- ADR-003 — decisiones arquitectónicas relacionadas con el batch y persistencia.
 
 ## 18. Glosario
 
