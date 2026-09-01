@@ -24,13 +24,13 @@ Este documento está dirigido principalmente a desarrolladores, mantenedores, pe
 
 La presente documentación representa el estado **as-built** de la solución al cierre del proyecto y debe utilizarse como referencia técnica del sistema productivo.
 
-- Repositorio canónico: `dipizarro/artikos-integration`.
+- Repositorio de referencia de entrega: `artikos-integration` (GitLab cliente).
 - Fuente maestra editable: `docs/documentacion-tecnica-artikos-asi.md`.
-- Branch corporativa de referencia al inicio de esta formalización: `main`.
-- Commit baseline de referencia: `8cab64a487980d89dae84f50311c533e340e7829`.
+- Branch de referencia: `main`.
+- Tag productivo de referencia: `v1.0.0`.
 - Estado de la solución: productiva / cierre de proyecto.
 
-El archivo Word de entrega que se genere a partir de esta documentación será un artefacto de publicación. Las modificaciones futuras deben realizarse primero sobre esta fuente versionada y luego regenerar una nueva versión del entregable.
+El archivo Word de entrega generado a partir de esta documentación constituye un artefacto formal de publicación. Las modificaciones futuras deben realizarse primero sobre esta fuente versionada y luego regenerar una nueva versión del entregable.
 
 ## 2. Arquitectura de la solución
 
@@ -63,6 +63,8 @@ nominaDocumentosContablesJob / processNominaDocumentosStep
 Spring Batch -> metadata BATCH_* (BATCH datasource)
 Procurement -> inserción documental ASI (fuera del código de este adapter)
 ```
+
+La versión Word incorpora adicionalmente la figura formal de arquitectura almacenada en `docs/diagramas/arquitectura-artikos-procurement-asi.svg`.
 
 ### 2.2 Límites y responsabilidades
 
@@ -159,6 +161,8 @@ Artikos presenta estados previos relevantes observados en la documentación y pr
 
 Content-Type: `application/json`. El body puede omitirse; en tal caso el código usa `GENERALES`, el máximo por defecto y `dryRun=true`. Si se entrega body, `profile` es obligatorio y admite `VIDA` o `GENERALES`; `maxNominas` debe ser al menos 1 y no superar el máximo configurado; `dryRun` nulo equivale a `false`.
 
+> **IMPORTANTE:** la omisión completa del body utiliza `dryRun=true`. En cambio, cuando se envía un body y se omite `dryRun`, el valor efectivo es `false`. Por seguridad operacional, se recomienda informar `dryRun` explícitamente en toda invocación con body.
+
 ```json
 {
   "profile": "VIDA",
@@ -185,9 +189,21 @@ Respuestas relevantes: 400 para perfil/parámetros inválidos; 409 si ya existe 
 
 Los GET operativos de estado, resumen y resultado existen, pero requieren `app.endpoints.operations.enabled=true`. El contrato inicial publicado por gateway contempla únicamente el POST de inicio y `/actuator/health`.
 
+### Clasificación de la superficie REST
+
+| Superficie | Clasificación | Habilitación | Uso esperado |
+| --- | --- | --- | --- |
+| `POST /api/v1/nominas/batch/start` | Contrato principal | Siempre cargado | Inicio productivo del batch |
+| `/actuator/health` | Operacional | Según exposición del gateway | Health del servicio |
+| GET de estado/resumen/resultado | Interno / operativo | `app.endpoints.operations.enabled=true` | Soporte y operación controlada |
+| Controllers de diagnóstico | Diagnóstico interno | `app.diagnostics.enabled=true` | Pruebas técnicas controladas; no exponer en producción |
+| Administración de metadata | Administrativo interno | `app.admin.enabled=true` | Operación administrativa autorizada |
+
 ## 6. Contratos y payloads
 
 Todos los tokens siguientes se representan como `****`.
+
+> **Nota contractual:** los nombres de elementos, namespaces, mayúsculas/minúsculas y grafías mostrados para cada operación Artikos corresponden a contratos específicos y deben respetarse literalmente. No deben normalizarse entre `NOMFACTERP`, `NOMFACTCONFIR` y `NOMFACTRES`.
 
 ### 6.1 NOMFACTERP
 
@@ -392,9 +408,7 @@ La solución completó su ciclo de construcción, pruebas, preproducción y paso
 - El problema de certificados/truststore observado durante las pruebas fue resuelto.
 - Artikos responde correctamente a `NOMFACTRES`.
 
-El servicio fue posteriormente validado y desplegado en producción. Por lo tanto, esta sección debe interpretarse como evidencia del proceso de certificación previo y no como indicación de que el sistema permanezca en preproducción.
-
-La validación no implica que todos los tipos de documento, combinaciones posibles de datos maestros o respuestas funcionales de sistemas externos hayan sido certificados exhaustivamente. Los comportamientos no cubiertos continúan sujetos a las reglas funcionales y operativas documentadas.
+El servicio fue posteriormente validado y desplegado en producción.
 
 ## 14. Consideraciones para producción y limitaciones conocidas
 
@@ -405,8 +419,6 @@ La validación no implica que todos los tipos de documento, combinaciones posibl
 - Mantener secretos sólo en Key Vault/Secret administrado; desactivar logging de payloads o conservarlo sanitizado.
 - Dimensionar pools, timeouts, retry y `maxNominas`; el executor admite dos ejecuciones, pero cada perfil sólo una.
 - Monitorear `actuator/health`, estados `BATCH_*`, `CONTROL_NOMINA`, latencia SOAP/REST y acumulación de metadata.
-- Considerar que `BatchResultStore` es memoria local: las consultas de detalle no sobreviven reinicios ni se comparten entre réplicas.
-- Verificar unicidad global de número de nómina o evolucionar la política para incluir empresa/perfil.
 - Ejecutar pruebas integrales con una nómina en estados Artikos válidos antes de cualquier cambio relevante de ambiente o integración.
 
 ## 15. Diagnóstico técnico
