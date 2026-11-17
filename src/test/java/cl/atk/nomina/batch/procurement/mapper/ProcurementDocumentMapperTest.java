@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import cl.atk.nomina.batch.domain.Conciliacion;
@@ -24,12 +25,57 @@ import cl.atk.nomina.batch.procurement.lookup.ProcurementMappingLookupService;
 import cl.atk.nomina.batch.procurement.lookup.ProcurementTaxTypeResolver;
 import cl.atk.nomina.batch.service.NominaXmlParserService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.io.ClassPathResource;
 
 class ProcurementDocumentMapperTest {
 
     private final NominaXmlParserService parser = new NominaXmlParserService(
             new ClassPathResource("samples/ZSVIDA_Nom15960.xml"));
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "samples/ZSVIDA_Nom15960.xml",
+            "samples/ZSVIDA_Nom15965_v2.xml",
+            "samples/ZSGRALES_Nom15961_v2.xml"
+    })
+    void genericCmpRoutingProducesExactlyTheExistingCmpRequest(String sample) {
+        Nomina nomina = withCodCtaPagoProveedor(parser.parse(new ClassPathResource(sample)), "2154424000");
+        ProcurementDocumentMapper mapper = mapper(defaultProperties());
+
+        assertThat(nomina.documentos()).isNotEmpty().allSatisfy(documento -> {
+            ProcurementDocumentRequest expected = mapper.toCmpDocumentRequest(ArtikosProfileType.VIDA, nomina, documento);
+            ProcurementDocumentRequest actual = mapper.toDocumentRequest(ArtikosProfileType.VIDA, nomina, documento);
+
+            assertThat(actual).isEqualTo(expected);
+            assertThat(actual.codTipDocumt()).isEqualTo("CMP");
+            assertThat(actual.cmp()).isNotNull();
+            assertThat(actual.hnr()).isNull();
+        });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"885", "886"})
+    void genericHnrRoutingFailsExplicitlyWithoutCmpMappingOrLookup(String tipoDocumento) {
+        ProcurementMappingProperties properties = defaultProperties();
+        ProcurementMappingLookupService lookupService = mock(ProcurementMappingLookupService.class);
+        ProcurementDocumentMapper mapper = mapper(properties, lookupService);
+        DocumentoContable documento = new DocumentoContable(
+                null, null, null, null, null, null, null, tipoDocumento, "FEC",
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null);
+        Nomina nomina = parser.parseSampleFile();
+
+        // Routing depends on tipoDocumento, even with a CMP or absent configuration value.
+        for (String documentType : new String[] {"CMP", null}) {
+            properties.setDocumentType(documentType);
+            assertThatThrownBy(() -> mapper.toDocumentRequest(ArtikosProfileType.VIDA, nomina, documento))
+                    .isInstanceOf(ProcurementMappingException.class)
+                    .hasMessage("Procurement HNR mapping is not implemented yet");
+        }
+        verifyNoInteractions(lookupService);
+    }
 
     @Test
     void mapsArtikosDocumentToProcurementCmpRequestUsingMsgToBeforeProfileFallback() {
@@ -279,7 +325,8 @@ class ProcurementDocumentMapperTest {
                 new ArtikosCompanyMapper(),
                 new ProcurementUsoIvaMapper(),
                 new ProcurementTaxTypeResolver(),
-                lookupService);
+                lookupService,
+                new ArtikosDocumentFamilyResolver());
     }
 
     private ProcurementMappingProperties defaultProperties() {
