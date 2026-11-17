@@ -1,0 +1,73 @@
+[ {
+  "COD_TIP_DOCUMT" : "CMP",
+  "CMP" : {
+    "CMP_DOCUMT" : {
+      "COD_TIP_DOCUMT" : "FEC",
+      "COD_EMPRES" : "001",
+      "NUM_PERIODO" : 202606,
+      "NUM_RUT" : 96670840,
+      "NUM_DOCCMP" : "2",
+      "COD_SISTEM" : "CM",
+      "COD_CUENTA" : "2154424000",
+      "COD_TIP_CUENTA" : "2",
+      "COD_CONTBL" : "CONTBL",
+      "COD_MONEDA" : "$",
+      "FEC_EMIDCM" : "2026-06-03",
+      "GLS_DOCUMT" : "33/2 DIMERC S.A.",
+      "FEC_COMPRB" : "2026-06-03",
+      "MTO_TOT_NTODIG" : 19000,
+      "MTO_TOT_EXNDIG" : 0,
+      "MTO_TOT_IVADIG" : 2850,
+      "MTO_TOT_DOCDIG" : 21850,
+      "NUM_FOL_DOCUMT" : 2,
+      "FEC_VNCCTA" : "2026-07-03",
+      "CODIGO_REC_IVA" : "U",
+      "FECHA_REC_FE" : "2026-06-03"
+    },
+    "CMP_DOCUMT_DET" : [ {
+      "NUM_LIN_DOCCMP" : 1,
+      "COD_TIP_UNID" : "UN",
+      "GRL_COD_ITEM" : "SERVICIO",
+      "COD_CCOSTO" : "20001",
+      "COD_CUENTA" : "6130401000",
+      "COD_TIP_CUENTA" : "2",
+      "GLS_LINEA" : "33/2 DIMERC S.A.",
+      "NUM_CANTDD" : 10,
+      "VAL_CSTUNI" : 15000,
+      "VAL_CSTUNI_MNDORG" : 15000,
+      "VAL_TIP_CAMBIO" : 1,
+      "PCT_DSCNTO" : 0,
+      "MTO_DSCNTO" : 0,
+      "MTO_EXENTO" : 0,
+      "MTO_NETO" : 15000,
+      "PCT_IVA" : 19,
+      "MTO_IVACLC" : 2090,
+      "MTO_TOT_ITEM" : 17090
+    }, {
+      "NUM_LIN_DOCCMP" : 2,
+      "COD_TIP_UNID" : "UN",
+      "GRL_COD_ITEM" : "SERVICIO",
+      "COD_CCOSTO" : "20001",
+      "COD_CUENTA" : "6130401000",
+      "COD_TIP_CUENTA" : "2",
+      "GLS_LINEA" : "33/2 DIMERC S.A.",
+      "NUM_CANTDD" : 4,
+      "VAL_CSTUNI" : 4000,
+      "VAL_CSTUNI_MNDORG" : 4000,
+      "VAL_TIP_CAMBIO" : 1,
+      "PCT_DSCNTO" : 0,
+      "MTO_DSCNTO" : 0,
+      "MTO_EXENTO" : 0,
+      "MTO_NETO" : 4000,
+      "PCT_IVA" : 19,
+      "MTO_IVACLC" : 760,
+      "MTO_TOT_ITEM" : 4760
+    } ],
+    "CMP_DOCUMT_DET_RUT" : {
+      "CMP_NUM_RUT" : 96670840,
+      "NUM_RUT" : 96670840,
+      "A_IND_VIGE" : "V"
+    }
+  },
+  "HNR" : null
+} ]

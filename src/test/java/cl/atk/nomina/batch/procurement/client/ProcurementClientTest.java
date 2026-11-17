@@ -32,6 +32,7 @@ import cl.atk.nomina.batch.procurement.mapper.ArtikosDocumentFamilyResolver;
 import cl.atk.nomina.batch.procurement.mapper.ArtikosDocumentTypeMapper;
 import cl.atk.nomina.batch.procurement.mapper.ProcurementDateMapper;
 import cl.atk.nomina.batch.procurement.mapper.ProcurementDocumentMapper;
+import cl.atk.nomina.batch.procurement.mapper.ProcurementDistributionResolver;
 import cl.atk.nomina.batch.procurement.mapper.ProcurementMappingValidator;
 import cl.atk.nomina.batch.procurement.mapper.ProcurementUsoIvaMapper;
 import cl.atk.nomina.batch.service.NominaXmlParserService;
@@ -272,8 +273,7 @@ class ProcurementClientTest {
                 new ArtikosDocumentTypeMapper(),
                 new ArtikosCompanyMapper(),
                 new ProcurementUsoIvaMapper(),
-                new ProcurementTaxTypeResolver(),
-                lookupService,
+                new ProcurementDistributionResolver(mappingProperties(), new ProcurementTaxTypeResolver(), lookupService),
                 new ArtikosDocumentFamilyResolver())
                 .toCmpDocumentRequest(ArtikosProfileType.GENERALES, nomina, documento);
     }
