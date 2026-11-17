@@ -26,7 +26,7 @@ public record ProcurementHnrDocumtDetRequest(
         Integer grl2NumPeriodo,
 
         @JsonProperty("COD_CCOSTO")
-        Long codCcosto,
+        String codCcosto,
 
         @JsonProperty("CON_COD_EMPRES")
         String conCodEmpres,
@@ -35,7 +35,7 @@ public record ProcurementHnrDocumtDetRequest(
         Integer conNumPeriodo,
 
         @JsonProperty("COD_CUENTA")
-        Long codCuenta,
+        String codCuenta,
 
         @JsonProperty("COD_TIP_CUENTA")
         String codTipCuenta,
