@@ -10,5 +10,5 @@ public record ProcurementDocumentRequest(
         ProcurementCmpRequest cmp,
 
         @JsonProperty("HNR")
-        Object hnr) {
+        ProcurementHnrRequest hnr) {
 }
