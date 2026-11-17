@@ -1,5 +1,25 @@
 # Procurement CMP mapping
 
+## Clasificacion de familia documental (Issue #28)
+
+`ArtikosDocumentFamilyResolver` clasifica exclusivamente `DocumentoContable.tipoDocumento()`:
+`33/34/56/61 -> CMP` y `885/886 -> HNR`. Rechaza documentos nulos, tipos ausentes
+o desconocidos con `ProcurementMappingException`; no existe fallback a CMP ni a `tipoErp`.
+Se eliminan espacios exteriores antes de consultar el catalogo.
+
+Los fixtures `ZSVIDA_Nom15960*.xml`, `ZSVIDA_Nom15965_v2.xml` y
+`ZSGRALES_Nom15961_v2.xml` contienen documentos con `Tipo_Documento` 33/34.
+Los codigos numericos 56/61 estan contemplados por la normalizacion existente en
+`ResultadoDocumento` y por `NominaResultXmlServiceTest`; aun no tienen fixtures XML propios.
+El 801 de los fixtures corresponde a referencias, no al tipo del documento contable.
+Los aliases ERP (`FEC`, `FCE`, `FC`, `OC`, etc.) no se agregan al catalogo de familia.
+
+885/886 son un catalogo preliminar segun la definicion Artikos disponible, pendiente
+de validacion con una nomina HNR real en #32. No se derivan reglas monetarias ni
+diferencias funcionales entre ambos. El resolver aun no participa del routing:
+el flujo CMP, `ArtikosDocumentTypeMapper` (basado en `tipoErp`) y la propiedad
+`procurement.mapping.document-type` conservan su comportamiento actual.
+
 ## Estado actual
 
 Desde Sprint 9.5 el mapper soporta XML Artikos v2 y consulta homologaciones ASI para completar campos Procurement por linea de distribucion.
