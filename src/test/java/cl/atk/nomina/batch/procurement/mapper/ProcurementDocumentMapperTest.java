@@ -56,6 +56,20 @@ class ProcurementDocumentMapperTest {
     }
 
     @ParameterizedTest
+    @ValueSource(strings = {"ZSVIDA_Nom15960.xml", "ZSVIDA_Nom15965_v2.xml", "ZSGRALES_Nom15961_v2.xml"})
+    void matchesCmpJsonBeforeDistributionExtraction(String sample) throws Exception {
+        Nomina nomina = withCodCtaPagoProveedor(parser.parse(new ClassPathResource("samples/" + sample)), "2154424000");
+        ProcurementDocumentMapper mapper = mapper(defaultProperties());
+        var requests = nomina.documentos().stream()
+                .map(documento -> mapper.toDocumentRequest(ArtikosProfileType.VIDA, nomina, documento)).toList();
+        var objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        var actual = objectMapper.readTree(objectMapper.writeValueAsString(requests));
+        try (var input = new ClassPathResource("samples/procurement/" + sample + ".cmp.json").getInputStream()) {
+            assertThat(actual).isEqualTo(objectMapper.readTree(input));
+        }
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"885", "886"})
     void genericHnrRoutingFailsExplicitlyWithoutCmpMappingOrLookup(String tipoDocumento) {
         ProcurementMappingProperties properties = defaultProperties();
@@ -324,8 +338,7 @@ class ProcurementDocumentMapperTest {
                 new ArtikosDocumentTypeMapper(),
                 new ArtikosCompanyMapper(),
                 new ProcurementUsoIvaMapper(),
-                new ProcurementTaxTypeResolver(),
-                lookupService,
+                new ProcurementDistributionResolver(properties, new ProcurementTaxTypeResolver(), lookupService),
                 new ArtikosDocumentFamilyResolver());
     }
 

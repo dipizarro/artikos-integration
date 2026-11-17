@@ -13,8 +13,7 @@ import cl.atk.nomina.batch.procurement.dto.ProcurementCmpRequest;
 import cl.atk.nomina.batch.procurement.dto.ProcurementDocumentRequest;
 import cl.atk.nomina.batch.procurement.exception.ProcurementMappingException;
 import cl.atk.nomina.batch.procurement.lookup.ProcurementItemLookupResult;
-import cl.atk.nomina.batch.procurement.lookup.ProcurementMappingLookupService;
-import cl.atk.nomina.batch.procurement.lookup.ProcurementTaxTypeResolver;
+import cl.atk.nomina.batch.procurement.mapper.ProcurementDistributionResolver.ResolvedDistribution;
 import cl.atk.nomina.batch.shared.util.StringSanitizer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -34,8 +33,7 @@ public class ProcurementDocumentMapper {
     private final ArtikosDocumentTypeMapper documentTypeMapper;
     private final ArtikosCompanyMapper companyMapper;
     private final ProcurementUsoIvaMapper usoIvaMapper;
-    private final ProcurementTaxTypeResolver taxTypeResolver;
-    private final ProcurementMappingLookupService lookupService;
+    private final ProcurementDistributionResolver distributionResolver;
     private final ArtikosDocumentFamilyResolver familyResolver;
 
     public ProcurementDocumentMapper(
@@ -45,8 +43,7 @@ public class ProcurementDocumentMapper {
             ArtikosDocumentTypeMapper documentTypeMapper,
             ArtikosCompanyMapper companyMapper,
             ProcurementUsoIvaMapper usoIvaMapper,
-            ProcurementTaxTypeResolver taxTypeResolver,
-            ProcurementMappingLookupService lookupService,
+            ProcurementDistributionResolver distributionResolver,
             ArtikosDocumentFamilyResolver familyResolver) {
         this.properties = properties;
         this.validator = validator;
@@ -54,8 +51,7 @@ public class ProcurementDocumentMapper {
         this.documentTypeMapper = documentTypeMapper;
         this.companyMapper = companyMapper;
         this.usoIvaMapper = usoIvaMapper;
-        this.taxTypeResolver = taxTypeResolver;
-        this.lookupService = lookupService;
+        this.distributionResolver = distributionResolver;
         this.familyResolver = familyResolver;
     }
 
@@ -118,7 +114,7 @@ public class ProcurementDocumentMapper {
                 rutProveedor,
                 requiredText(documento.numeroDocumento(), "DocumentoContable.numeroDocumento"),
                 firstLookup.codSistem(),
-                singleCodCtaPagoProveedor(documento),
+                singleCodCtaPagoProveedor(details),
                 firstLookup.codTipCuenta(),
                 codContbl,
                 firstLookup.codMoneda(),
@@ -136,23 +132,14 @@ public class ProcurementDocumentMapper {
     }
 
     private List<MappedDetail> toDetails(String codEmpres, DocumentoContable documento) {
-        List<DetailSource> sources = allDetailSources(documento);
-        if (sources.isEmpty()) {
-            throw new ProcurementMappingException("DocumentoContable must contain at least one distribucion");
-        }
+        List<ResolvedDistribution> sources = distributionResolver.resolve(codEmpres, documento);
 
         List<MappedDetail> details = new ArrayList<>();
         for (int index = 0; index < sources.size(); index++) {
-            DetailSource source = sources.get(index);
+            ResolvedDistribution source = sources.get(index);
             DistribucionContable distribucion = source.distribucion();
             BigDecimal unitValue = firstNonNull(distribucion.montoNeto(), distribucion.montoExento(), distribucion.montoTotal());
-            Long codCuenta = requiredLong(distribucion.codCuentaContable(), "DistribucionContable.codCuentaContable");
-            String codImpsto = taxTypeResolver.resolve(source.conciliacion().tipoMonto(), distribucion.montoNeto());
-            ProcurementItemLookupResult lookup = lookupService.resolveItemForDistribution(
-                    codEmpres,
-                    properties.getCodSistem(),
-                    codCuenta,
-                    codImpsto);
+            ProcurementItemLookupResult lookup = source.lookup();
             ProcurementCmpDocumtDetRequest request = new ProcurementCmpDocumtDetRequest(
                     index + 1,
                     lookup.codTipUnid(),
@@ -172,7 +159,7 @@ public class ProcurementDocumentMapper {
                     properties.getPctIva(),
                     zeroIfNull(distribucion.montoIva()),
                     zeroIfNull(distribucion.montoTotal()));
-            details.add(new MappedDetail(request, lookup));
+            details.add(new MappedDetail(request, lookup, distribucion));
         }
         return List.copyOf(details);
     }
@@ -196,9 +183,9 @@ public class ProcurementDocumentMapper {
                 .orElseThrow(() -> new ProcurementMappingException("ASI lookup did not return any detail"));
     }
 
-    private String singleCodCtaPagoProveedor(DocumentoContable documento) {
-        return allDetailSources(documento).stream()
-                .map(DetailSource::distribucion)
+    private String singleCodCtaPagoProveedor(List<MappedDetail> details) {
+        return details.stream()
+                .map(MappedDetail::distribucion)
                 .map(DistribucionContable::codCtaPagoProveedor)
                 .filter(value -> !isBlank(value))
                 .distinct()
@@ -209,21 +196,6 @@ public class ProcurementDocumentMapper {
                 })
                 .orElseThrow(() -> new ProcurementMappingException(
                         "Missing Artikos field for Procurement mapping: DistribucionContable.codCtaPagoProveedor"));
-    }
-
-    private List<DetailSource> allDetailSources(DocumentoContable documento) {
-        List<DetailSource> sources = new ArrayList<>();
-        if (documento.conciliaciones() == null) {
-            return List.of();
-        }
-        for (Conciliacion conciliacion : documento.conciliaciones()) {
-            if (conciliacion.distribuciones() != null) {
-                for (DistribucionContable distribucion : conciliacion.distribuciones()) {
-                    sources.add(new DetailSource(conciliacion, distribucion));
-                }
-            }
-        }
-        return sources;
     }
 
     private String documentGloss(DocumentoContable documento, int maxLength) {
@@ -277,9 +249,9 @@ public class ProcurementDocumentMapper {
         return value == null || value.isBlank();
     }
 
-    private record DetailSource(Conciliacion conciliacion, DistribucionContable distribucion) {
-    }
-
-    private record MappedDetail(ProcurementCmpDocumtDetRequest request, ProcurementItemLookupResult lookup) {
+    private record MappedDetail(
+            ProcurementCmpDocumtDetRequest request,
+            ProcurementItemLookupResult lookup,
+            DistribucionContable distribucion) {
     }
 }
