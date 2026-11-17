@@ -32,7 +32,7 @@ public record ProcurementHnrDocumtRequest(
         Integer conNumPeriodo,
 
         @JsonProperty("COD_CUENTA")
-        Long codCuenta,
+        String codCuenta,
 
         @JsonProperty("COD_TIP_CUENTA")
         String codTipCuenta,
