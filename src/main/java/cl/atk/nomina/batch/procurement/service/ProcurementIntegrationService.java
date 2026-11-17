@@ -54,7 +54,7 @@ public class ProcurementIntegrationService {
                     documento.idDocumento(),
                     documento.numeroDocumento(),
                     documento.rutProveedor());
-            ProcurementDocumentRequest request = documentMapper.toCmpDocumentRequest(profile, nomina, documento);
+            ProcurementDocumentRequest request = documentMapper.toDocumentRequest(profile, nomina, documento);
             ProcurementDocumentPostResult postResult = procurementClient.postDocument(request);
             boolean duplicate = resultMapper.isDuplicate(postResult);
             if (duplicate) {

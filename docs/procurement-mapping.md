@@ -16,9 +16,12 @@ Los aliases ERP (`FEC`, `FCE`, `FC`, `OC`, etc.) no se agregan al catalogo de fa
 
 885/886 son un catalogo preliminar segun la definicion Artikos disponible, pendiente
 de validacion con una nomina HNR real en #32. No se derivan reglas monetarias ni
-diferencias funcionales entre ambos. El resolver aun no participa del routing:
-el flujo CMP, `ArtikosDocumentTypeMapper` (basado en `tipoErp`) y la propiedad
-`procurement.mapping.document-type` conservan su comportamiento actual.
+diferencias funcionales entre ambos. Desde #30, `ProcurementIntegrationService` usa
+`ProcurementDocumentMapper.toDocumentRequest`, que resuelve la familia y delega CMP
+al mapping existente. HNR falla con `ProcurementMappingException` y el mensaje
+`Procurement HNR mapping is not implemented yet`, sin enviar un payload.
+`ArtikosDocumentTypeMapper` (basado en `tipoErp`) y la propiedad
+`procurement.mapping.document-type` conservan su uso interno CMP; la propiedad no decide el routing.
 
 ## Estado actual
 

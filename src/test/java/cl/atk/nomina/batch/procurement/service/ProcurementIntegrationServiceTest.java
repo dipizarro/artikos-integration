@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import cl.atk.nomina.batch.domain.DocumentoContable;
@@ -37,7 +38,7 @@ class ProcurementIntegrationServiceTest {
         ProcurementDocumentRequest request = new ProcurementDocumentRequest("CMP", null, null);
         ProcurementDocumentPostResult postResult = new ProcurementDocumentPostResult(
                 true, 0, "OK", null, "CMP-1", "{}");
-        when(documentMapper.toCmpDocumentRequest(ArtikosProfileType.VIDA, nomina, documento)).thenReturn(request);
+        when(documentMapper.toDocumentRequest(ArtikosProfileType.VIDA, nomina, documento)).thenReturn(request);
         when(procurementClient.postDocument(request)).thenReturn(postResult);
 
         ResultadoDocumento result = new ProcurementIntegrationService(
@@ -59,7 +60,7 @@ class ProcurementIntegrationServiceTest {
         ProcurementDocumentRequest request = new ProcurementDocumentRequest("CMP", null, null);
         ProcurementDocumentPostResult postResult = new ProcurementDocumentPostResult(
                 false, -1, "Rechazado", "Regla funcional", null, "{}");
-        when(documentMapper.toCmpDocumentRequest(ArtikosProfileType.VIDA, nomina, documento)).thenReturn(request);
+        when(documentMapper.toDocumentRequest(ArtikosProfileType.VIDA, nomina, documento)).thenReturn(request);
         when(procurementClient.postDocument(request)).thenReturn(postResult);
 
         ResultadoDocumento result = new ProcurementIntegrationService(
@@ -86,7 +87,7 @@ class ProcurementIntegrationServiceTest {
                 "El registro que intenta crear ya existe en la base de datos",
                 null,
                 "{}");
-        when(documentMapper.toCmpDocumentRequest(ArtikosProfileType.VIDA, nomina, documento)).thenReturn(request);
+        when(documentMapper.toDocumentRequest(ArtikosProfileType.VIDA, nomina, documento)).thenReturn(request);
         when(procurementClient.postDocument(request)).thenReturn(postResult);
 
         ResultadoDocumento result = new ProcurementIntegrationService(
@@ -104,18 +105,20 @@ class ProcurementIntegrationServiceTest {
         Nomina nomina = parser.parseSampleFile();
         DocumentoContable documento = nomina.documentos().get(0);
         ProcurementDocumentMapper documentMapper = mock(ProcurementDocumentMapper.class);
-        when(documentMapper.toCmpDocumentRequest(ArtikosProfileType.VIDA, nomina, documento))
+        when(documentMapper.toDocumentRequest(ArtikosProfileType.VIDA, nomina, documento))
                 .thenThrow(new ProcurementMappingException("campo requerido"));
+        ProcurementClient procurementClient = mock(ProcurementClient.class);
 
         ProcurementIntegrationService service = new ProcurementIntegrationService(
                 documentMapper,
-                mock(ProcurementClient.class),
+                procurementClient,
                 new ProcurementResultMapper(new ProcurementDuplicateDetector()));
 
         assertThatThrownBy(() -> service.processDocument(ArtikosProfileType.VIDA, nomina, documento))
                 .isInstanceOf(ArtikosIntegrationException.class)
                 .satisfies(exception -> assertThat(((ArtikosIntegrationException) exception).getErrorType())
                         .isEqualTo(IntegrationErrorType.PROCUREMENT_MAPPING_ERROR));
+        verifyNoInteractions(procurementClient);
     }
 
     @Test
@@ -125,7 +128,7 @@ class ProcurementIntegrationServiceTest {
         ProcurementDocumentMapper documentMapper = mock(ProcurementDocumentMapper.class);
         ProcurementClient procurementClient = mock(ProcurementClient.class);
         ProcurementDocumentRequest request = new ProcurementDocumentRequest("CMP", null, null);
-        when(documentMapper.toCmpDocumentRequest(ArtikosProfileType.VIDA, nomina, documento)).thenReturn(request);
+        when(documentMapper.toDocumentRequest(ArtikosProfileType.VIDA, nomina, documento)).thenReturn(request);
         when(procurementClient.postDocument(request)).thenThrow(new ProcurementClientException("timeout"));
 
         ProcurementIntegrationService service = new ProcurementIntegrationService(

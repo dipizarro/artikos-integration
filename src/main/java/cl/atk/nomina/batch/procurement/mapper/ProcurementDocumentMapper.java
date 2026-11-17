@@ -36,6 +36,7 @@ public class ProcurementDocumentMapper {
     private final ProcurementUsoIvaMapper usoIvaMapper;
     private final ProcurementTaxTypeResolver taxTypeResolver;
     private final ProcurementMappingLookupService lookupService;
+    private final ArtikosDocumentFamilyResolver familyResolver;
 
     public ProcurementDocumentMapper(
             ProcurementMappingProperties properties,
@@ -45,7 +46,8 @@ public class ProcurementDocumentMapper {
             ArtikosCompanyMapper companyMapper,
             ProcurementUsoIvaMapper usoIvaMapper,
             ProcurementTaxTypeResolver taxTypeResolver,
-            ProcurementMappingLookupService lookupService) {
+            ProcurementMappingLookupService lookupService,
+            ArtikosDocumentFamilyResolver familyResolver) {
         this.properties = properties;
         this.validator = validator;
         this.dateMapper = dateMapper;
@@ -54,6 +56,17 @@ public class ProcurementDocumentMapper {
         this.usoIvaMapper = usoIvaMapper;
         this.taxTypeResolver = taxTypeResolver;
         this.lookupService = lookupService;
+        this.familyResolver = familyResolver;
+    }
+
+    public ProcurementDocumentRequest toDocumentRequest(
+            ArtikosProfileType profile,
+            Nomina nomina,
+            DocumentoContable documento) {
+        return switch (familyResolver.resolve(documento)) {
+            case CMP -> toCmpDocumentRequest(profile, nomina, documento);
+            case HNR -> throw new ProcurementMappingException("Procurement HNR mapping is not implemented yet");
+        };
     }
 
     public ProcurementDocumentRequest toCmpDocumentRequest(
