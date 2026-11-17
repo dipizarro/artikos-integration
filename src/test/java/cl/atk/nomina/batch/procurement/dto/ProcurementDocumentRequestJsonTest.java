@@ -13,6 +13,96 @@ class ProcurementDocumentRequestJsonTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
+    void serializesHnrWithExactReferenceContract() throws Exception {
+        ProcurementDocumentRequest request = new ProcurementDocumentRequest(
+                "HNR",
+                null,
+                new ProcurementHnrRequest(
+                        new ProcurementHnrDocumtRequest(
+                                "HNR", "01", 2026, 100000008L, 900001L,
+                                "PROC", "1", "01", 2026, 4101001L, "2",
+                                "2026-06-09", "Documento HNR prueba local",
+                                new BigDecimal("100000"), new BigDecimal("10000"), new BigDecimal("90000"),
+                                "V", "2026-06-09", "2026-07-09"),
+                        List.of(new ProcurementHnrDocumtDetRequest(
+                                1, "01", 2026, "SERV001", "PROC", "01", 2026,
+                                1001L, "01", 2026, 4101001L, "2", "1", "CLP", "UN",
+                                "2026-06-09", "Linea de prueba HNR", BigDecimal.ONE,
+                                new BigDecimal("100000"), new BigDecimal("100000"), BigDecimal.ONE,
+                                BigDecimal.ZERO, new BigDecimal("100000"), new BigDecimal("10"),
+                                new BigDecimal("10000"), "V")),
+                        new ProcurementHnrDocumtDetRutRequest(100000008L, 100000008L, "V")));
+
+        JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(request));
+        JsonNode expected = objectMapper.readTree("""
+                {
+                  "COD_TIP_DOCUMT": "HNR",
+                  "CMP": null,
+                  "HNR": {
+                    "HNR_DOCUMT": {
+                      "COD_TIP_DOCUMT": "HNR",
+                      "COD_EMPRES": "01",
+                      "NUM_PERIODO": 2026,
+                      "NUM_RUT": 100000008,
+                      "NUM_DOCHON": 900001,
+                      "COD_SISTEM": "PROC",
+                      "COD_CONTBL": "1",
+                      "CON_COD_EMPRES": "01",
+                      "CON_NUM_PERIODO": 2026,
+                      "COD_CUENTA": 4101001,
+                      "COD_TIP_CUENTA": "2",
+                      "FEC_EMIDCM": "2026-06-09",
+                      "GLS_DOCUMT": "Documento HNR prueba local",
+                      "MTO_TOTL_HNR": 100000,
+                      "MTO_RETN_HNR": 10000,
+                      "MTO_NETO_HNR": 90000,
+                      "A_IND_VIGE": "V",
+                      "FEC_COMPRB": "2026-06-09",
+                      "FEC_VNCCTA": "2026-07-09"
+                    },
+                    "HNR_DOCUMT_DET": [
+                      {
+                        "NUM_LIN_DOCHON": 1,
+                        "GRL_COD_EMPRES": "01",
+                        "GRL_NUM_PERIODO": 2026,
+                        "GRL_COD_ITEM": "SERV001",
+                        "COD_SISTEM": "PROC",
+                        "GRL2_COD_EMPRES": "01",
+                        "GRL2_NUM_PERIODO": 2026,
+                        "COD_CCOSTO": 1001,
+                        "CON_COD_EMPRES": "01",
+                        "CON_NUM_PERIODO": 2026,
+                        "COD_CUENTA": 4101001,
+                        "COD_TIP_CUENTA": "2",
+                        "COD_CONTBL": "1",
+                        "COD_MONEDA": "CLP",
+                        "COD_TIP_UNID": "UN",
+                        "FEC_EMIDCM": "2026-06-09",
+                        "GLS_LINEA": "Linea de prueba HNR",
+                        "NUM_CANTDD": 1,
+                        "VAL_UNIT_MNDORG": 100000,
+                        "MTO_MNDORG": 100000,
+                        "VAL_TIP_CAMBIO": 1,
+                        "PCT_DSCNTO": 0,
+                        "MTO_TOT_ITEM": 100000,
+                        "PCT_RETN": 10,
+                        "MTO_RETN_ITEM": 10000,
+                        "A_IND_VIGE": "V"
+                      }
+                    ],
+                    "HNR_DOCUMT_DET_RUT": {
+                      "HNR_NUM_RUT": 100000008,
+                      "NUM_RUT": 100000008,
+                      "A_IND_VIGE": "V"
+                    }
+                  }
+                }
+                """);
+
+        assertThat(json).isEqualTo(expected);
+    }
+
+    @Test
     void serializesWithExactProcurementJsonNames() throws Exception {
         ProcurementDocumentRequest request = new ProcurementDocumentRequest(
                 "CMP",
