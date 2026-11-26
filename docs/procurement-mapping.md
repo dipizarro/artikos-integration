@@ -14,8 +14,8 @@ Los codigos numericos 56/61 estan contemplados por la normalizacion existente en
 El 801 de los fixtures corresponde a referencias, no al tipo del documento contable.
 Los aliases ERP (`FEC`, `FCE`, `FC`, `OC`, etc.) no se agregan al catalogo de familia.
 
-885/886 son un catalogo preliminar segun la definicion Artikos disponible, pendiente
-de validacion con una nomina HNR real en #32. No se derivan reglas monetarias ni
+885/886 fueron confirmados en una nomina HNR real para #42. El Issue #32 sigue
+abierto por definiciones funcionales y monetarias pendientes. No se derivan reglas monetarias ni
 diferencias funcionales entre ambos. Desde #30, `ProcurementIntegrationService` usa
 `ProcurementDocumentMapper.toDocumentRequest`, que resuelve la familia y delega CMP
 al mapping existente. HNR falla con `ProcurementMappingException` y el mensaje
@@ -193,3 +193,41 @@ Reglas iniciales:
 - Timeout/conexion: error tecnico.
 
 El cliente no loguea el JSON completo en `INFO`. Request y response completos quedan reservados para `DEBUG`.
+
+## Preparacion HNR (Issue #42)
+
+Para los tipos 885 y 886 se confirma funcionalmente el lookup `HO` + `RET`,
+incluso si la boleta no tiene retencion monetaria. Configuracion independiente:
+
+```properties
+procurement.mapping.hnr.cod-sistem=HO
+procurement.mapping.hnr.cod-impsto=RET
+procurement.mapping.hnr.pct-retn=12.25
+```
+
+Overrides por entorno: `PROCUREMENT_MAPPING_HNR_COD_SISTEM`,
+`PROCUREMENT_MAPPING_HNR_COD_IMPSTO` y `PROCUREMENT_MAPPING_HNR_PCT_RETN`.
+El porcentaje 12.25 es provisional de desarrollo, entregado por el propietario;
+no es una tasa tributaria definitiva validada para produccion y no se utiliza
+para calcular importes ni para resolver el lookup.
+
+`ProcurementDistributionResolver` clasifica la familia con
+`ArtikosDocumentFamilyResolver` y conserva un unico recorrido y un unico
+`ProcurementMappingLookupService` sobre `GRL_MAE_ITEM_DET`. HNR toma sistema e
+impuesto de su configuracion; CMP conserva su sistema existente y
+`ProcurementTaxTypeResolver` (IVA/EXE). `ResolvedDistribution` no cambia.
+
+La integracion traspasa datos: no es un motor contable ni tributario. No calcula,
+recalcula, distribuye ni modifica importes originales sin aprobacion funcional
+explicita. No se implementan porcentajes efectivos, prorrateos, montos liquidos
+ni transformaciones de Quantity. El fixture sintetico `hnr-synthetic-v2.xml`
+preserva SOAP Artikos v2.0, Tipo_ERP vacio, BH/ADJ, Quantity=0 y los importes
+recibidos: 885 (8000/0/0/8000) y 886 (294985/44985/0/294985), en orden
+Neto/IVA/Exento/Total. Las distribuciones conservan bruto y Monto_IVA=0.
+No incluye PDF originales, identidades reales ni tokens.
+
+El Issue #32 permanece abierto: falta aprobar el mapeo financiero definitivo,
+el tratamiento de retenciones y montos liquidos y la tasa definitiva para
+produccion. No se avanza a #33 ni se construyen payloads HNR.
+El routing productivo conserva `Procurement HNR mapping is not implemented yet`
+antes de consultar ASI o enviar documentos desde `ProcurementIntegrationService`.
