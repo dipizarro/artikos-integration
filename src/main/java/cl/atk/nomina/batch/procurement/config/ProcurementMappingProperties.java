@@ -71,7 +71,7 @@ public class ProcurementMappingProperties {
         private String codSistem = "HO";
         private String codImpsto = "RET";
         // Provisional development value; never used to calculate amounts.
-        private BigDecimal pctRetn = new BigDecimal("12.5");
+        private BigDecimal pctRetn = new BigDecimal("12.25");
 
         public String getCodSistem() { return codSistem; }
         public void setCodSistem(String codSistem) { this.codSistem = codSistem; }

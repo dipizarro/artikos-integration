@@ -202,12 +202,12 @@ incluso si la boleta no tiene retencion monetaria. Configuracion independiente:
 ```properties
 procurement.mapping.hnr.cod-sistem=HO
 procurement.mapping.hnr.cod-impsto=RET
-procurement.mapping.hnr.pct-retn=12.5
+procurement.mapping.hnr.pct-retn=12.25
 ```
 
 Overrides por entorno: `PROCUREMENT_MAPPING_HNR_COD_SISTEM`,
 `PROCUREMENT_MAPPING_HNR_COD_IMPSTO` y `PROCUREMENT_MAPPING_HNR_PCT_RETN`.
-El porcentaje 12.5 es provisional de desarrollo, entregado por el propietario;
+El porcentaje 12.25 es provisional de desarrollo, entregado por el propietario;
 no es una tasa tributaria definitiva validada para produccion y no se utiliza
 para calcular importes ni para resolver el lookup.
 

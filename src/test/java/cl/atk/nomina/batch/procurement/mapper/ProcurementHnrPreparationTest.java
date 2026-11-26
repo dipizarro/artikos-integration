@@ -82,7 +82,7 @@ class ProcurementHnrPreparationTest {
         var defaults = new ProcurementMappingProperties();
         assertThat(defaults.getHnr().getCodSistem()).isEqualTo("HO");
         assertThat(defaults.getHnr().getCodImpsto()).isEqualTo("RET");
-        assertThat(defaults.getHnr().getPctRetn()).isEqualByComparingTo("12.5");
+        assertThat(defaults.getHnr().getPctRetn()).isEqualByComparingTo("12.25");
         var configured = configuredProperties();
         assertThat(configured.getHnr().getCodSistem()).isEqualTo("HX");
         assertThat(configured.getHnr().getCodImpsto()).isEqualTo("RX");
