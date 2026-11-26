@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+   <soap:Body>
+      <EjecutaTrxResponse xmlns="AtkWs_DocExtractor">
+         <EjecutaTrxResult>
+            <Message xmlns="">
+               <MessageId>
+                  <MsgCode>NOMFACTERP</MsgCode>
+                  <MsgDesc>Nomina HNR sintetica</MsgDesc>
+                  <MsgVersion>v2.0</MsgVersion>
+                  <MsgFromAddress>SYNTHETIC</MsgFromAddress>
+                  <MsgToAddress>ARTIKOS</MsgToAddress>
+                  <MsgDateTime>26-11-2026</MsgDateTime>
+                  <MsgCodSis>SAF</MsgCodSis>
+                  <MsgCallBack />
+                  <MsgStatus>0</MsgStatus>
+               </MessageId>
+               <MessageOut>
+                  <LogMessage>
+                     <Type>0</Type>
+                     <DocNumber />
+                     <DocType />
+                     <MessageText />
+                     <Severity>0</Severity>
+                  </LogMessage>
+               </MessageOut>
+               <Nomina>
+                  <Cabecera>
+                     <Msg_From>ARTIKOS</Msg_From>
+                     <Msg_To>001</Msg_To>
+                     <Msg_Date>2026-11-26 10:00:00</Msg_Date>
+                     <Msg_System>SAF</Msg_System>
+                     <Msg_Code>NOMFACTERP</Msg_Code>
+                     <Msg_Version>2.0</Msg_Version>
+                     <Numero_Nomina>900042</Numero_Nomina>
+                     <Tipo_Nomina>SYNTH_HNR</Tipo_Nomina>
+                     <Fecha_Nomina>2026-11-26 10:00:00</Fecha_Nomina>
+                     <Cantidad_Documentos>2</Cantidad_Documentos>
+                  </Cabecera>
+                  <Documentos>
+                     <Documento>
+                        <Secuencia>1</Secuencia>
+                        <Rut_Proveedor>10000001-K</Rut_Proveedor>
+                        <Proveedor>PROVEEDOR SINTETICO 1</Proveedor>
+                        <Nacional>si</Nacional>
+                        <Id_Documento>9000421</Id_Documento>
+                        <Usuario>synthetic-test</Usuario>
+                        <Numero_Documento>9001</Numero_Documento>
+                        <Tipo_Documento>885</Tipo_Documento>
+                        <Tipo_ERP />
+                        <Fecha_Emision>2026-11-25</Fecha_Emision>
+                        <Fecha_Vencimiento>2026-12-25</Fecha_Vencimiento>
+                        <Fecha_Recepcion>2026-11-26</Fecha_Recepcion>
+                        <Fecha_RecepSII>2026-11-26</Fecha_RecepSII>
+                        <URL_Documento>https://example.invalid/hnr/885</URL_Documento>
+                        <Observacion>Fixture sintetico sin datos personales</Observacion>
+                        <DocCurrency>CLP</DocCurrency>
+                        <USO_IVA />
+                        <Monto_Neto>8000</Monto_Neto>
+                        <Monto_IVA>0</Monto_IVA>
+                        <Monto_Exento>0</Monto_Exento>
+                        <Otros_Impuestos>0</Otros_Impuestos>
+                        <Monto_Total>8000</Monto_Total>
+                        <Referencias />
+                        <Conciliaciones>
+                           <Conciliacion>
+                              <Tipo_Monto>BH</Tipo_Monto>
+                              <Tipo_Producto />
+                              <Codigo_Conciliacion>ADJ</Codigo_Conciliacion>
+                              <Moneda_Cambio />
+                              <Monto_Cambio>0</Monto_Cambio>
+                              <Cod_Recep />
+                              <Quantity>0</Quantity>
+                              <Comment />
+                              <ItemLine>0</ItemLine>
+                              <Distribuciones>
+                                 <Distribucion>
+                                    <Secuencia>1</Secuencia>
+                                    <ItemDescription>Servicio sintetico</ItemDescription>
+                                    <Cod_CentroCosto>20001</Cod_CentroCosto>
+                                    <CentroCosto>Centro sintetico</CentroCosto>
+                                    <Cod_CuentaContable>6123004000</Cod_CuentaContable>
+                                    <CuentaContable>Cuenta sintetica</CuentaContable>
+                                    <Cod_Cta_Pago_Proveedor>2154424000</Cod_Cta_Pago_Proveedor>
+                                    <Monto_Neto>8000</Monto_Neto>
+                                    <Monto_Exento>0</Monto_Exento>
+                                    <Monto_IVA>0</Monto_IVA>
+                                    <Monto_Total>8000</Monto_Total>
+                                 </Distribucion>
+                              </Distribuciones>
+                           </Conciliacion>
+                        </Conciliaciones>
+                     </Documento>
+                     <Documento>
+                        <Secuencia>2</Secuencia>
+                        <Rut_Proveedor>10000002-8</Rut_Proveedor>
+                        <Proveedor>PROVEEDOR SINTETICO 2</Proveedor>
+                        <Nacional>si</Nacional>
+                        <Id_Documento>9000422</Id_Documento>
+                        <Usuario>synthetic-test</Usuario>
+                        <Numero_Documento>9002</Numero_Documento>
+                        <Tipo_Documento>886</Tipo_Documento>
+                        <Tipo_ERP />
+                        <Fecha_Emision>2026-11-25</Fecha_Emision>
+                        <Fecha_Vencimiento>2026-12-25</Fecha_Vencimiento>
+                        <Fecha_Recepcion>2026-11-26</Fecha_Recepcion>
+                        <Fecha_RecepSII>2026-11-26</Fecha_RecepSII>
+                        <URL_Documento>https://example.invalid/hnr/886</URL_Documento>
+                        <Observacion>Fixture sintetico sin datos personales</Observacion>
+                        <DocCurrency>CLP</DocCurrency>
+                        <USO_IVA />
+                        <Monto_Neto>294985</Monto_Neto>
+                        <Monto_IVA>44985</Monto_IVA>
+                        <Monto_Exento>0</Monto_Exento>
+                        <Otros_Impuestos>0</Otros_Impuestos>
+                        <Monto_Total>294985</Monto_Total>
+                        <Referencias />
+                        <Conciliaciones>
+                           <Conciliacion>
+                              <Tipo_Monto>BH</Tipo_Monto>
+                              <Tipo_Producto />
+                              <Codigo_Conciliacion>ADJ</Codigo_Conciliacion>
+                              <Moneda_Cambio />
+                              <Monto_Cambio>0</Monto_Cambio>
+                              <Cod_Recep />
+                              <Quantity>0</Quantity>
+                              <Comment />
+                              <ItemLine>0</ItemLine>
+                              <Distribuciones>
+                                 <Distribucion>
+                                    <Secuencia>1</Secuencia>
+                                    <ItemDescription>Servicio sintetico</ItemDescription>
+                                    <Cod_CentroCosto>20001</Cod_CentroCosto>
+                                    <CentroCosto>Centro sintetico</CentroCosto>
+                                    <Cod_CuentaContable>6123004000</Cod_CuentaContable>
+                                    <CuentaContable>Cuenta sintetica</CuentaContable>
+                                    <Cod_Cta_Pago_Proveedor>2154424000</Cod_Cta_Pago_Proveedor>
+                                    <Monto_Neto>294985</Monto_Neto>
+                                    <Monto_Exento>0</Monto_Exento>
+                                    <Monto_IVA>0</Monto_IVA>
+                                    <Monto_Total>294985</Monto_Total>
+                                 </Distribucion>
+                              </Distribuciones>
+                           </Conciliacion>
+                        </Conciliaciones>
+                     </Documento>
+                  </Documentos>
+               </Nomina>
+            </Message>
+         </EjecutaTrxResult>
+      </EjecutaTrxResponse>
+   </soap:Body>
+</soap:Envelope>

@@ -14,7 +14,7 @@ public class ArtikosDocumentFamilyResolver {
             "34", ProcurementDocumentFamily.CMP,
             "56", ProcurementDocumentFamily.CMP,
             "61", ProcurementDocumentFamily.CMP,
-            // Preliminary HNR catalog; validate against a real HNR nomina in issue #32.
+            // HNR types confirmed from a real nomina; financial definitions remain open in issue #32.
             "885", ProcurementDocumentFamily.HNR,
             "886", ProcurementDocumentFamily.HNR);
 

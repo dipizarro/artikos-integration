@@ -4,40 +4,57 @@ import cl.atk.nomina.batch.domain.Conciliacion;
 import cl.atk.nomina.batch.domain.DistribucionContable;
 import cl.atk.nomina.batch.domain.DocumentoContable;
 import cl.atk.nomina.batch.procurement.config.ProcurementMappingProperties;
+import cl.atk.nomina.batch.procurement.domain.ProcurementDocumentFamily;
 import cl.atk.nomina.batch.procurement.exception.ProcurementMappingException;
 import cl.atk.nomina.batch.procurement.lookup.ProcurementItemLookupResult;
 import cl.atk.nomina.batch.procurement.lookup.ProcurementMappingLookupService;
 import cl.atk.nomina.batch.procurement.lookup.ProcurementTaxTypeResolver;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProcurementDistributionResolver {
 
+    private final ArtikosDocumentFamilyResolver familyResolver;
     private final ProcurementMappingProperties properties;
     private final ProcurementTaxTypeResolver taxTypeResolver;
     private final ProcurementMappingLookupService lookupService;
 
+    // Preserve the existing constructor for standalone CMP callers.
     public ProcurementDistributionResolver(
             ProcurementMappingProperties properties,
             ProcurementTaxTypeResolver taxTypeResolver,
             ProcurementMappingLookupService lookupService) {
+        this(properties, taxTypeResolver, lookupService, new ArtikosDocumentFamilyResolver());
+    }
+
+    @Autowired
+    public ProcurementDistributionResolver(
+            ProcurementMappingProperties properties,
+            ProcurementTaxTypeResolver taxTypeResolver,
+            ProcurementMappingLookupService lookupService,
+            ArtikosDocumentFamilyResolver familyResolver) {
+        this.familyResolver = familyResolver;
         this.properties = properties;
         this.taxTypeResolver = taxTypeResolver;
         this.lookupService = lookupService;
     }
 
     public List<ResolvedDistribution> resolve(String codEmpres, DocumentoContable documento) {
+        boolean hnr = familyResolver.resolve(documento) == ProcurementDocumentFamily.HNR;
+        String codSistem = hnr ? properties.getHnr().getCodSistem() : properties.getCodSistem();
         List<ResolvedDistribution> resolved = new ArrayList<>();
         if (documento.conciliaciones() != null) {
             for (Conciliacion conciliacion : documento.conciliaciones()) {
                 if (conciliacion.distribuciones() != null) {
                     for (DistribucionContable distribucion : conciliacion.distribuciones()) {
                         Long codCuenta = requiredAccount(distribucion.codCuentaContable());
-                        String codImpsto = taxTypeResolver.resolve(conciliacion.tipoMonto(), distribucion.montoNeto());
+                        String codImpsto = hnr ? properties.getHnr().getCodImpsto()
+                                : taxTypeResolver.resolve(conciliacion.tipoMonto(), distribucion.montoNeto());
                         ProcurementItemLookupResult lookup = lookupService.resolveItemForDistribution(
-                                codEmpres, properties.getCodSistem(), codCuenta, codImpsto);
+                                codEmpres, codSistem, codCuenta, codImpsto);
                         resolved.add(new ResolvedDistribution(conciliacion, distribucion, lookup));
                     }
                 }

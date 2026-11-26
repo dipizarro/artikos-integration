@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "procurement.mapping")
 public class ProcurementMappingProperties {
 
+    private final Hnr hnr = new Hnr();
+
     private String documentType = "CMP";
     private String codSistem = "CM";
     private BigDecimal valTipCambio = BigDecimal.ONE;
@@ -61,4 +63,21 @@ public class ProcurementMappingProperties {
         this.pctIva = pctIva;
     }
 
+    public Hnr getHnr() {
+        return hnr;
+    }
+
+    public static class Hnr {
+        private String codSistem = "HO";
+        private String codImpsto = "RET";
+        // Provisional development value; never used to calculate amounts.
+        private BigDecimal pctRetn = new BigDecimal("12.5");
+
+        public String getCodSistem() { return codSistem; }
+        public void setCodSistem(String codSistem) { this.codSistem = codSistem; }
+        public String getCodImpsto() { return codImpsto; }
+        public void setCodImpsto(String codImpsto) { this.codImpsto = codImpsto; }
+        public BigDecimal getPctRetn() { return pctRetn; }
+        public void setPctRetn(BigDecimal pctRetn) { this.pctRetn = pctRetn; }
+    }
 }
